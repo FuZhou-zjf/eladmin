@@ -1,0 +1,2 @@
+2024/09/28 13:50:23 [error] 20#20: *1 directory index of "/usr/share/nginx/html/eladmin/dist/" is forbidden, client: 192.168.65.1, server: localhost, request: "GET / HTTP/1.1", host: "localhost"
+2024/09/28 13:50:24 [error] 20#20: *1 rewrite or internal redirection cycle while redirect to named location "@router", client: 192.168.65.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "localhost", referrer: "http://localhost/"
