@@ -6,3 +6,5 @@
 2024/10/03 14:18:35 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
 2024/10/03 14:45:38 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
 2024/10/03 18:33:00 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/03 23:12:45 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/04 00:15:04 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
