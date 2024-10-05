@@ -29,7 +29,7 @@ import java.io.Serializable;
 * @website https://eladmin.vip
 * @description /
 * @author laozhao
-* @date 2024-10-04
+* @date 2024-10-05
 **/
 @Entity
 @Data
@@ -47,8 +47,7 @@ public class Item implements Serializable {
     @ApiModelProperty(value = "name")
     private String name;
 
-    @Column(name = "`price`",nullable = false)
-    @NotNull
+    @Column(name = "`price`")
     @ApiModelProperty(value = "price")
     private BigDecimal price;
 

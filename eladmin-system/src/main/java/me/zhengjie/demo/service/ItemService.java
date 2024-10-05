@@ -29,7 +29,7 @@ import me.zhengjie.utils.PageResult;
 * @website https://eladmin.vip
 * @description 服务接口
 * @author laozhao
-* @date 2024-10-04
+* @date 2024-10-05
 **/
 public interface ItemService {
 

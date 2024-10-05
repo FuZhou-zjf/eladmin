@@ -16,13 +16,15 @@
 package me.zhengjie.demo.service.dto;
 
 import lombok.Data;
+import java.sql.Timestamp;
+import java.math.BigDecimal;
 import java.util.List;
 import me.zhengjie.annotation.Query;
 
 /**
 * @website https://eladmin.vip
 * @author laozhao
-* @date 2024-10-04
+* @date 2024-10-05
 **/
 @Data
 public class ItemQueryCriteria{
@@ -30,4 +32,10 @@ public class ItemQueryCriteria{
     /** 模糊 */
     @Query(type = Query.Type.INNER_LIKE)
     private String name;
+    /** BETWEEN */
+    @Query(type = Query.Type.BETWEEN)
+    private List<BigDecimal> price;
+    /** BETWEEN */
+    @Query(type = Query.Type.BETWEEN)
+    private List<Timestamp> createdAt;
 }
