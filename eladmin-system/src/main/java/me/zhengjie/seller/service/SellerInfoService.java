@@ -13,11 +13,11 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package me.zhengjie.demo.service;
+package me.zhengjie.seller.service;
 
-import me.zhengjie.demo.domain.Item;
-import me.zhengjie.demo.service.dto.ItemDto;
-import me.zhengjie.demo.service.dto.ItemQueryCriteria;
+import me.zhengjie.seller.domain.SellerInfo;
+import me.zhengjie.seller.service.dto.SellerInfoDto;
+import me.zhengjie.seller.service.dto.SellerInfoQueryCriteria;
 import org.springframework.data.domain.Pageable;
 import java.util.Map;
 import java.util.List;
@@ -28,10 +28,10 @@ import me.zhengjie.utils.PageResult;
 /**
 * @website https://eladmin.vip
 * @description 服务接口
-* @author laozhao
-* @date 2024-10-08
+* @author Laozhao
+* @date 2024-10-09
 **/
-public interface ItemService {
+public interface SellerInfoService {
 
     /**
     * 查询数据分页
@@ -39,39 +39,39 @@ public interface ItemService {
     * @param pageable 分页参数
     * @return Map<String,Object>
     */
-    PageResult<ItemDto> queryAll(ItemQueryCriteria criteria, Pageable pageable);
+    PageResult<SellerInfoDto> queryAll(SellerInfoQueryCriteria criteria, Pageable pageable);
 
     /**
     * 查询所有数据不分页
     * @param criteria 条件参数
-    * @return List<ItemDto>
+    * @return List<SellerInfoDto>
     */
-    List<ItemDto> queryAll(ItemQueryCriteria criteria);
+    List<SellerInfoDto> queryAll(SellerInfoQueryCriteria criteria);
 
     /**
      * 根据ID查询
-     * @param id ID
-     * @return ItemDto
+     * @param sellerId ID
+     * @return SellerInfoDto
      */
-    ItemDto findById(Integer id);
+    SellerInfoDto findById(Long sellerId);
 
     /**
     * 创建
     * @param resources /
     */
-    void create(Item resources);
+    void create(SellerInfo resources);
 
     /**
     * 编辑
     * @param resources /
     */
-    void update(Item resources);
+    void update(SellerInfo resources);
 
     /**
     * 多选删除
     * @param ids /
     */
-    void deleteAll(Integer[] ids);
+    void deleteAll(Long[] ids);
 
     /**
     * 导出数据
@@ -79,5 +79,5 @@ public interface ItemService {
     * @param response /
     * @throws IOException /
     */
-    void download(List<ItemDto> all, HttpServletResponse response) throws IOException;
+    void download(List<SellerInfoDto> all, HttpServletResponse response) throws IOException;
 }
