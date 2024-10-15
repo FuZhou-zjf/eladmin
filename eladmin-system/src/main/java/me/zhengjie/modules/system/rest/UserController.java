@@ -207,4 +207,20 @@ public class UserController {
             throw new BadRequestException("角色权限不足");
         }
     }
+    @GetMapping("/getDeptInfo")
+    @ApiOperation("获取当前用户的部门信息")
+    public ResponseEntity<Map<String, Object>> getDeptInfo() {
+        // 获取当前用户的用户名
+        String username = SecurityUtils.getCurrentUsername();
+        // 获取用户的详细信息
+        UserDto user = userService.findByName(username);
+
+        // 构造返回的数据，包括用户部门信息
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("dept_id", user.getDept().getId());
+        userInfo.put("username", user.getUsername());
+
+        return new ResponseEntity<>(userInfo, HttpStatus.OK);
+    }
+
 }
