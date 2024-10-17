@@ -1,2 +1,29 @@
+<<<<<<< HEAD
 2024/09/28 13:50:23 [error] 20#20: *1 directory index of "/usr/share/nginx/html/eladmin/dist/" is forbidden, client: 192.168.65.1, server: localhost, request: "GET / HTTP/1.1", host: "localhost"
 2024/09/28 13:50:24 [error] 20#20: *1 rewrite or internal redirection cycle while redirect to named location "@router", client: 192.168.65.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "localhost", referrer: "http://localhost/"
+=======
+2024/10/03 11:53:44 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/03 12:24:11 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/03 12:25:31 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/03 12:25:53 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/03 14:15:56 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/03 14:18:35 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/03 14:45:38 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/03 18:33:00 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/03 23:12:45 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/04 00:15:04 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/04 09:19:10 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/04 10:26:51 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/04 10:54:55 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/04 11:52:46 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/04 15:07:07 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/04 18:52:00 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/04 23:19:39 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/04 23:27:49 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/04 23:47:29 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/04 23:56:20 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/05 12:05:39 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/05 12:38:46 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/05 13:11:36 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/05 13:38:39 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+>>>>>>> 7925b0ee41ed7830662682d797283d7fcbcce7f8
