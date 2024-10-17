@@ -48,3 +48,6 @@
 2024/10/14 01:29:53 [warn] 1#1: server name "域名/外网IP" has suspicious symbols in /etc/nginx/conf.d/eladmin.conf:4
 2024/10/14 01:51:40 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
 2024/10/14 01:52:11 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/16 22:24:00 [error] 8#8: *1 directory index of "/usr/share/nginx/html/eladmin/dist/" is forbidden, client: 172.18.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2024/10/16 22:24:00 [error] 8#8: *1 rewrite or internal redirection cycle while redirect to named location "@router", client: 172.18.0.1, server: _, request: "GET /favicon.ico HTTP/1.1", host: "localhost", referrer: "http://localhost/"
+2024/10/16 22:30:53 [notice] 16#16: signal process started

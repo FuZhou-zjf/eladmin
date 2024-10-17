@@ -219,6 +219,7 @@ public class UserController {
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("dept_id", user.getDept().getId());
         userInfo.put("username", user.getUsername());
+        userInfo.put("id", user.getId());
 
         return new ResponseEntity<>(userInfo, HttpStatus.OK);
     }

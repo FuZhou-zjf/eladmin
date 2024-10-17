@@ -111,7 +111,6 @@ CREATE TABLE bus_app_info (
                               bank_routing_number VARCHAR(9) COMMENT '路由号',
 
     -- 身份验证
-                              government_id_type ENUM('护照', '驾驶执照', '绿卡') COMMENT '证件类型',
                               government_id_number VARCHAR(100) COMMENT '证件号',
                               security_question VARCHAR(255) COMMENT '安全问题',
                               security_answer VARCHAR(255) COMMENT '答案',
@@ -119,19 +118,3 @@ CREATE TABLE bus_app_info (
 );
 
 
-/**
-  卖家和项目映射关系表
- */
-CREATE TABLE eladmin.bus_seller_platform_mapping (
-                                                 mapping_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '映射ID',
-                                                 seller_id BIGINT NOT NULL COMMENT '卖家ID（关联bus_seller_info表）',
-                                                 account_id BIGINT NOT NULL COMMENT '账号记录ID（关联bus_app_info表）',
-
-    -- 外键约束
-                                                 CONSTRAINT fk_seller FOREIGN KEY (seller_id) REFERENCES eladmin.bus_seller_info (seller_id),
-                                                 CONSTRAINT fk_account FOREIGN KEY (account_id) REFERENCES eladmin.bus_app_info (account_id),
-
-    -- 索引
-                                                 INDEX idx_seller_id (seller_id),
-                                                 INDEX idx_account_id (account_id)
-) COMMENT '卖家-平台账号映射表';
