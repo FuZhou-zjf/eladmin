@@ -48,7 +48,7 @@ create index inx_enabled
   卖家表
  */
 CREATE TABLE bus_seller_info (
-                                 seller_id INT AUTO_INCREMENT PRIMARY KEY COMMENT '卖家主键',
+                                 seller_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '卖家主键',
                                  name VARCHAR(100) NOT NULL COMMENT '卖家姓名',
                                  contact_info VARCHAR(150) COMMENT '联系方式',
                                  email VARCHAR(150) COMMENT '电子邮件',
@@ -84,7 +84,7 @@ create table eladmin.bus_order
     order_app_name       varchar(255) null comment 'App名称',
     order_account_username varchar(255) null comment '账号名',
     order_account_password varchar(255) null comment '账号密码',
-    order_status         enum ('待处理', '已付款', '已发货', '已完成', '已取消', '已退款', '挂起') default '待处理' null comment '订单状态',
+    order_status         enum ('待处理', '已付款', '已发货', '已完成', '已取消', '已退款', '挂起') default '待处理' not null comment '订单状态',
     order_seller_id      bigint null comment '卖家ID',
     order_seller_name    varchar(255) null comment '卖家名称',
     order_seller_ssn     varchar(50) null comment '卖家SSN',
@@ -154,15 +154,15 @@ CREATE TABLE bus_app_info (
   卖家和项目映射关系表
  */
 CREATE TABLE eladmin.bus_seller_platform_mapping (
-                                                 mapping_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '映射ID',
-                                                 seller_id BIGINT NOT NULL COMMENT '卖家ID（关联bus_seller_info表）',
-                                                 account_id BIGINT NOT NULL COMMENT '账号记录ID（关联bus_app_info表）',
+    mapping_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '映射ID',
+    seller_id BIGINT NOT NULL COMMENT '卖家ID（关联bus_seller_info表）',
+    account_id BIGINT NOT NULL COMMENT '账号记录ID（关联bus_app_info表）',
 
     -- 外键约束
-                                                 CONSTRAINT fk_seller FOREIGN KEY (seller_id) REFERENCES eladmin.bus_seller_info (seller_id),
-                                                 CONSTRAINT fk_account FOREIGN KEY (account_id) REFERENCES eladmin.bus_app_info (account_id),
+    CONSTRAINT fk_seller_mapping FOREIGN KEY (seller_id) REFERENCES eladmin.bus_seller_info (seller_id),
+    CONSTRAINT fk_account_mapping FOREIGN KEY (account_id) REFERENCES eladmin.bus_app_info (account_id),
 
     -- 索引
-                                                 INDEX idx_seller_id (seller_id),
-                                                 INDEX idx_account_id (account_id)
+    INDEX idx_seller_id (seller_id),
+    INDEX idx_account_id (account_id)
 ) COMMENT '卖家-平台账号映射表';
