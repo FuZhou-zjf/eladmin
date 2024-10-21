@@ -24,11 +24,11 @@ services:
 
   app:
     build:
-      context: /Users/zj008/eladmin # Dockerfile 所在目录
+      context: K:/eladmin # Dockerfile 所在目录
       dockerfile: Dockerfile
     container_name: eladmin
     volumes:
-      - /Users/zj008/eladmin:/home/eladmin # 挂载本地代码目录
+      - K:/eladmin:/home/eladmin # 挂载本地代码目录
     ports:
       - "8080:8000" # 修改：确保容器内使用 8000 端口暴露服务，外部映射为 8080
     environment:
@@ -45,10 +45,11 @@ services:
     image: node:14 # 使用符合要求的 Node.js 版本
     container_name: eladmin-node
     volumes:
-      - /Users/zj008/eladmin-web:/home/eladmin-web # 挂载前端代码目录
+      - K:/eladmin-web:/home/eladmin-web # 挂载前端代码目录
     working_dir: /home/eladmin-web
     command: sh -c "npm install && npm run build:prod" # 使用 build:prod 构建前端
     restart: always
+    # 修改建议：增加 depends_on 以确保数据库和 Redis 服务就绪后再启动
     depends_on:
       - redis
       - db
@@ -60,11 +61,11 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /Users/zj008/eladmin/nginx/nginx.conf:/etc/nginx/nginx.conf:ro # 确保配置文件只读挂载
-      - /Users/zj008/eladmin/nginx/conf.d/eladmin.conf:/etc/nginx/conf.d/eladmin.conf:ro
-      - /Users/zj008/eladmin/nginx/logs:/var/log/nginx
-      - /Users/zj008/eladmin/nginx/cert:/etc/nginx/cert
-      - /Users/zj008/eladmin/nginx/dist:/usr/share/nginx/html/eladmin/dist:ro # 挂载前端静态文件为只读
+      - K:/eladmin/nginx/nginx.conf:/etc/nginx/nginx.conf:ro # 确保配置文件只读挂载
+      - K:/eladmin/nginx/conf.d/eladmin.conf:/etc/nginx/conf.d/eladmin.conf:ro
+      - K:/eladmin/nginx/logs:/var/log/nginx
+      - K:/eladmin/nginx/cert:/etc/nginx/cert
+      - K:/eladmin/nginx/dist:/usr/share/nginx/html/eladmin/dist:ro # 挂载前端静态文件为只读
     environment:
       - TZ=Asia/Shanghai
     depends_on:
