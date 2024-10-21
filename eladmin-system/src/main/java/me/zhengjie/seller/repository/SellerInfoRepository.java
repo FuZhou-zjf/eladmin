@@ -13,25 +13,21 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package me.zhengjie.demo.service.dto;
+package me.zhengjie.seller.repository;
 
-import lombok.Data;
-import java.math.BigDecimal;
-import java.util.List;
-import me.zhengjie.annotation.Query;
+import me.zhengjie.seller.domain.SellerInfo;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 /**
 * @website https://eladmin.vip
-* @author laozhao
-* @date 2024-10-08
+* @author Laozhao
+* @date 2024-10-09
 **/
-@Data
-public class ItemQueryCriteria{
+public interface SellerInfoRepository extends JpaRepository<SellerInfo, Long>, JpaSpecificationExecutor<SellerInfo> {
+    boolean existsByNameAndSsn(String name, String ssn);
+    boolean existsByName(String name);
+    boolean existsBySsn(String ssn);
 
-    /** 模糊 */
-    @Query(type = Query.Type.INNER_LIKE)
-    private String name;
-    /** BETWEEN */
-    @Query(type = Query.Type.BETWEEN)
-    private List<BigDecimal> price;
+
 }

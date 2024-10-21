@@ -13,25 +13,20 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package me.zhengjie.demo.service.dto;
+package me.zhengjie.order.service.mapstruct;
 
-import lombok.Data;
-import java.math.BigDecimal;
-import java.util.List;
-import me.zhengjie.annotation.Query;
+import me.zhengjie.base.BaseMapper;
+import me.zhengjie.order.domain.Order;
+import me.zhengjie.order.service.dto.OrderDto;
+import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
 /**
 * @website https://eladmin.vip
-* @author laozhao
-* @date 2024-10-08
+* @author LaoZhao
+* @date 2024-10-09
 **/
-@Data
-public class ItemQueryCriteria{
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface OrderMapper extends BaseMapper<OrderDto, Order> {
 
-    /** 模糊 */
-    @Query(type = Query.Type.INNER_LIKE)
-    private String name;
-    /** BETWEEN */
-    @Query(type = Query.Type.BETWEEN)
-    private List<BigDecimal> price;
 }

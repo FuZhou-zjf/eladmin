@@ -25,12 +25,12 @@ services:
   app:
     build:
       context: /Users/zj008/eladmin # Dockerfile 所在目录
-      dockerfile: Dockerfile # 如果你需要自定义 Dockerfile
+      dockerfile: Dockerfile
     container_name: eladmin
     volumes:
       - /Users/zj008/eladmin:/home/eladmin # 挂载本地代码目录
     ports:
-      - "8080:8000"
+      - "8080:8000" # 修改：确保容器内使用 8000 端口暴露服务，外部映射为 8080
     environment:
       - TZ=Asia/Shanghai
       - DB_HOST=db
@@ -47,10 +47,11 @@ services:
     volumes:
       - /Users/zj008/eladmin-web:/home/eladmin-web # 挂载前端代码目录
     working_dir: /home/eladmin-web
-#    command: sh -c "npm install && npm run build" # 执行构建命令
-    command: sh -c "npm install && npm run build:prod" # 使用 build:prod
-
+    command: sh -c "npm install && npm run build:prod" # 使用 build:prod 构建前端
     restart: always
+    depends_on:
+      - redis
+      - db
 
   nginx:
     image: nginx:alpine
@@ -59,16 +60,17 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /Users/zj008/eladmin/nginx/nginx.conf:/etc/nginx/nginx.conf # 挂载本地的 nginx.conf
-      - /Users/zj008/eladmin/nginx/conf.d:/etc/nginx/conf.d # 挂载本地 conf.d 目录
-      - /Users/zj008/eladmin/nginx/logs:/var/log/nginx # 挂载本地日志目录
-      - /Users/zj008/eladmin/nginx/cert:/etc/nginx/cert # 挂载本地证书目录
-      - /Users/zj008/eladmin-web/dist:/usr/share/nginx/html/eladmin/dist # 挂载前端构建的静态文件
+      - /Users/zj008/eladmin/nginx/nginx.conf:/etc/nginx/nginx.conf:ro # 确保配置文件只读挂载
+      - /Users/zj008/eladmin/nginx/conf.d/eladmin.conf:/etc/nginx/conf.d/eladmin.conf:ro
+      - /Users/zj008/eladmin/nginx/logs:/var/log/nginx
+      - /Users/zj008/eladmin/nginx/cert:/etc/nginx/cert
+      - /Users/zj008/eladmin/nginx/dist:/usr/share/nginx/html/eladmin/dist:ro # 挂载前端静态文件为只读
     environment:
       - TZ=Asia/Shanghai
     depends_on:
       - app
       - node
+    command: /bin/sh -c "rm /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'" # 删除默认配置并前台启动
     restart: always
 
 volumes:

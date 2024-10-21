@@ -29,7 +29,7 @@ import java.io.Serializable;
 * @website https://eladmin.vip
 * @description /
 * @author laozhao
-* @date 2024-10-05
+* @date 2024-10-08
 **/
 @Entity
 @Data
@@ -62,6 +62,11 @@ public class Item implements Serializable {
     @Column(name = "`updated_at`")
     @ApiModelProperty(value = "updatedAt")
     private Timestamp updatedAt;
+
+    @Column(name = "`order_status`",nullable = false)
+    @NotBlank
+    @ApiModelProperty(value = "orderStatus")
+    private String orderStatus;
 
     public void copy(Item source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));

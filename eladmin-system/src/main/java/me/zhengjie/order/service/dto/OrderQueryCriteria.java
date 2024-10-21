@@ -13,25 +13,33 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package me.zhengjie.demo.service.dto;
+package me.zhengjie.order.service.dto;
 
 import lombok.Data;
-import java.math.BigDecimal;
 import java.util.List;
 import me.zhengjie.annotation.Query;
 
 /**
 * @website https://eladmin.vip
-* @author laozhao
-* @date 2024-10-08
+* @author LaoZhao
+* @date 2024-10-09
 **/
 @Data
-public class ItemQueryCriteria{
+public class OrderQueryCriteria{
+
+    /** 精确 */
+    @Query
+    private String orderStatus;
 
     /** 模糊 */
     @Query(type = Query.Type.INNER_LIKE)
-    private String name;
-    /** BETWEEN */
-    @Query(type = Query.Type.BETWEEN)
-    private List<BigDecimal> price;
+    private String orderSellerName;
+
+    /** 精确 */
+    @Query
+    private String orderSellerSsn;
+
+    /** 模糊 */
+    @Query(type = Query.Type.INNER_LIKE)
+    private String orderContactInfo;
 }

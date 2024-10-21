@@ -42,7 +42,7 @@ import me.zhengjie.utils.PageResult;
 * @website https://eladmin.vip
 * @description 服务实现
 * @author laozhao
-* @date 2024-10-05
+* @date 2024-10-08
 **/
 @Service
 @RequiredArgsConstructor
@@ -102,6 +102,7 @@ public class ItemServiceImpl implements ItemService {
             map.put(" quantity",  item.getQuantity());
             map.put(" createdAt",  item.getCreatedAt());
             map.put(" updatedAt",  item.getUpdatedAt());
+            map.put(" orderStatus",  item.getOrderStatus());
             list.add(map);
         }
         FileUtil.downloadExcel(list, response);

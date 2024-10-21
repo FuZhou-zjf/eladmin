@@ -26,4 +26,36 @@
 2024/10/05 12:38:46 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
 2024/10/05 13:11:36 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
 2024/10/05 13:38:39 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+<<<<<<< HEAD
 >>>>>>> 7925b0ee41ed7830662682d797283d7fcbcce7f8
+=======
+2024/10/06 10:07:11 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/06 11:10:00 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/06 16:22:32 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/07 12:20:12 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/07 12:37:28 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/08 22:28:37 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/08 23:52:10 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/09 16:47:55 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/09 18:16:22 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/09 19:50:43 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/09 21:31:50 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/09 21:50:42 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/09 22:59:40 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/09 23:19:56 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/09 23:38:01 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/10 00:00:17 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/10 00:22:22 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/10 19:53:05 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/11 00:52:00 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/13 20:32:14 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/13 22:55:50 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/14 00:48:56 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/14 00:50:30 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/14 01:29:53 [warn] 1#1: server name "域名/外网IP" has suspicious symbols in /etc/nginx/conf.d/eladmin.conf:4
+2024/10/14 01:51:40 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/14 01:52:11 [warn] 1#1: conflicting server name "localhost" on 0.0.0.0:80, ignored
+2024/10/16 22:24:00 [error] 8#8: *1 directory index of "/usr/share/nginx/html/eladmin/dist/" is forbidden, client: 172.18.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2024/10/16 22:24:00 [error] 8#8: *1 rewrite or internal redirection cycle while redirect to named location "@router", client: 172.18.0.1, server: _, request: "GET /favicon.ico HTTP/1.1", host: "localhost", referrer: "http://localhost/"
+2024/10/16 22:30:53 [notice] 16#16: signal process started
+>>>>>>> d40bd0acca8059a722543d1faf6767f89070f569

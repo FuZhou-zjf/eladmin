@@ -24,7 +24,7 @@ import java.io.Serializable;
 * @website https://eladmin.vip
 * @description /
 * @author laozhao
-* @date 2024-10-05
+* @date 2024-10-08
 **/
 @Data
 public class ItemDto implements Serializable {
@@ -40,4 +40,6 @@ public class ItemDto implements Serializable {
     private Timestamp createdAt;
 
     private Timestamp updatedAt;
+
+    private String orderStatus;
 }
