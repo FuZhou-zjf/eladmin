@@ -24,7 +24,7 @@ import java.io.Serializable;
 * @website https://eladmin.vip
 * @description /
 * @author LaoZhao
-* @date 2024-10-09
+* @date 2024-10-21
 **/
 @Data
 public class OrderDto implements Serializable {
@@ -106,4 +106,6 @@ public class OrderDto implements Serializable {
 
     /** 备注 */
     private String orderRemark;
+
+
 }

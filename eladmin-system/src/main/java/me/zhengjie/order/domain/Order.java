@@ -19,6 +19,8 @@ import lombok.Data;
 import cn.hutool.core.bean.BeanUtil;
 import io.swagger.annotations.ApiModelProperty;
 import cn.hutool.core.bean.copier.CopyOptions;
+import me.zhengjie.seller.domain.SellerInfo;
+
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.sql.Timestamp;
@@ -29,7 +31,7 @@ import java.io.Serializable;
 * @website https://eladmin.vip
 * @description /
 * @author LaoZhao
-* @date 2024-10-09
+* @date 2024-10-21
 **/
 @Entity
 @Data
@@ -68,9 +70,6 @@ public class Order implements Serializable {
     @ApiModelProperty(value = "App名称")
     private String orderAppName;
 
-    @Column(name = "`order_seller_id`")
-    @ApiModelProperty(value = "卖家ID")
-    private Long orderSellerId;
 
     @Column(name = "`order_seller_name`",nullable = false)
     @NotBlank
@@ -95,9 +94,6 @@ public class Order implements Serializable {
     @ApiModelProperty(value = "紧急联系方式")
     private String orderContactOther;
 
-    @Column(name = "`order_referrer_id`")
-    @ApiModelProperty(value = "推荐人ID")
-    private Long orderReferrerId;
 
     @Column(name = "`order_referrer_name`")
     @ApiModelProperty(value = "推荐人名称")
@@ -114,6 +110,16 @@ public class Order implements Serializable {
     @Column(name = "`order_referrer_other`")
     @ApiModelProperty(value = "推荐人紧急联系方式")
     private String orderReferrerOther;
+
+    /** 卖家 */
+    @ManyToOne
+    @JoinColumn(name = "order_seller_id", referencedColumnName = "seller_id")
+    private SellerInfo orderSeller;
+
+    /** 推荐人 */
+    @ManyToOne
+    @JoinColumn(name = "order_referrer_id", referencedColumnName = "seller_id")
+    private SellerInfo orderReferrer;
 
     @Column(name = "`order_referrer_method`")
     @ApiModelProperty(value = "推荐人支付方式")

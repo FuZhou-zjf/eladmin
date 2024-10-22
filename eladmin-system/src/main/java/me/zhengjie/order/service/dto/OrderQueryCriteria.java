@@ -22,14 +22,18 @@ import me.zhengjie.annotation.Query;
 /**
 * @website https://eladmin.vip
 * @author LaoZhao
-* @date 2024-10-09
+* @date 2024-10-21
 **/
 @Data
 public class OrderQueryCriteria{
 
+    /** 模糊 */
+    @Query(type = Query.Type.INNER_LIKE)
+    private String orderNumber;
+
     /** 精确 */
     @Query
-    private String orderStatus;
+    private String orderAccountUsername;
 
     /** 模糊 */
     @Query(type = Query.Type.INNER_LIKE)
@@ -38,7 +42,7 @@ public class OrderQueryCriteria{
     /** 精确 */
     @Query
     private String orderSellerSsn;
-
+    
     /** 模糊 */
     @Query(type = Query.Type.INNER_LIKE)
     private String orderContactInfo;

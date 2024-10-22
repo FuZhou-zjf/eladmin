@@ -39,6 +39,7 @@ public class SellerInfo implements Serializable {
     @Id
     @Column(name = "`seller_id`")
     @ApiModelProperty(value = "卖家ID")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long sellerId;
 
     @Column(name = "`name`",nullable = false)
@@ -51,17 +52,17 @@ public class SellerInfo implements Serializable {
     @ApiModelProperty(value = "联系方式")
     private String contactInfo;
 
-    @Column(name = "`email`",nullable = false)
+    @Column(name = "`email`")
     @NotBlank
     @ApiModelProperty(value = "电子邮件")
     private String email;
 
-    @Column(name = "`phone_number`",nullable = false)
+    @Column(name = "`phone_number`")
     @NotBlank
     @ApiModelProperty(value = "电话号码")
     private String phoneNumber;
 
-    @Column(name = "`identity_number`",nullable = false)
+    @Column(name = "`identity_number`")
     @NotBlank
     @ApiModelProperty(value = "身份证号码")
     private String identityNumber;

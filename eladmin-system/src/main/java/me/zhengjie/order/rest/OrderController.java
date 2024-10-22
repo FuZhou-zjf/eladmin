@@ -35,7 +35,7 @@ import me.zhengjie.order.service.dto.OrderDto;
 /**
 * @website https://eladmin.vip
 * @author LaoZhao
-* @date 2024-10-09
+* @date 2024-10-21
 **/
 @RestController
 @RequiredArgsConstructor
@@ -58,6 +58,7 @@ public class OrderController {
     @ApiOperation("查询订单管理")
     @PreAuthorize("@el.check('order:list')")
     public ResponseEntity<PageResult<OrderDto>> queryOrder(OrderQueryCriteria criteria, Pageable pageable){
+
         return new ResponseEntity<>(orderService.queryAll(criteria,pageable),HttpStatus.OK);
     }
 
@@ -66,8 +67,17 @@ public class OrderController {
     @ApiOperation("新增订单管理")
     @PreAuthorize("@el.check('order:add')")
     public ResponseEntity<Object> createOrder(@Validated @RequestBody Order resources){
-        orderService.create(resources);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        try {
+            // 调用 orderService 的 create 方法保存订单数据
+            orderService.create(resources);  // 使用 create 而不是 save
+
+            // 返回 201 Created 响应
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } catch (Exception e) {
+            // 打印异常日志，并返回 500 错误
+            e.printStackTrace();
+            return new ResponseEntity<>("订单创建失败", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PutMapping
@@ -87,5 +97,7 @@ public class OrderController {
         orderService.deleteAll(ids);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+
 
 }

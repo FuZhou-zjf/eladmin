@@ -16,13 +16,14 @@
 package me.zhengjie.order.repository;
 
 import me.zhengjie.order.domain.Order;
+import me.zhengjie.seller.domain.SellerInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 /**
 * @website https://eladmin.vip
 * @author LaoZhao
-* @date 2024-10-09
+* @date 2024-10-21
 **/
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
     /**

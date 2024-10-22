@@ -29,7 +29,7 @@ import me.zhengjie.utils.PageResult;
 * @website https://eladmin.vip
 * @description 服务接口
 * @author LaoZhao
-* @date 2024-10-09
+* @date 2024-10-21
 **/
 public interface OrderService {
 
@@ -80,4 +80,7 @@ public interface OrderService {
     * @throws IOException /
     */
     void download(List<OrderDto> all, HttpServletResponse response) throws IOException;
+
+
+
 }

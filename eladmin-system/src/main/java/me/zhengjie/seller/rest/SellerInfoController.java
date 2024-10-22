@@ -106,5 +106,21 @@ public class SellerInfoController {
 
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/checkRecommenderExists")
+    public ResponseEntity<Map<String, Object>> checkRecommenderExists(
+            @RequestParam String name,
+            @RequestParam String contactInfo) {
+
+        boolean nameExists = sellerInfoService.existsByName(name);
+        boolean contactExists = sellerInfoService.existsByContactInfo(contactInfo);
+        boolean recommenderExists = sellerInfoService.existsByNameAndContactInfo(name, contactInfo);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("nameExists", nameExists);
+        response.put("contactExists", contactExists);
+        response.put("recommenderExists", recommenderExists);
+
+        return ResponseEntity.ok(response);
+    }
 
 }

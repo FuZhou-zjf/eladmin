@@ -19,10 +19,12 @@ import me.zhengjie.seller.domain.SellerInfo;
 import me.zhengjie.seller.service.dto.SellerInfoDto;
 import me.zhengjie.seller.service.dto.SellerInfoQueryCriteria;
 import org.springframework.data.domain.Pageable;
-import java.util.Map;
+
 import java.util.List;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
+
 import me.zhengjie.utils.PageResult;
 
 /**
@@ -86,4 +88,19 @@ public interface SellerInfoService {
     boolean checkSsnExists(String ssn);
 
     boolean checkNameExists(String name);
+
+    /**
+     * 根据姓名和联系方式获取推荐人信息，如果不存在则创建新的推荐人
+     */
+    SellerInfo getOrCreateRecommender(String name, String contactInfo);
+
+    boolean existsByName(String name);
+
+    boolean existsByContactInfo(String contactInfo);
+
+    boolean existsByNameAndContactInfo(String name, String contactInfo);
+
+    SellerInfo save(SellerInfo seller);
+
+    SellerInfo getOrCreateSellerWithInfo(@NotBlank String orderSellerName, @NotBlank String orderSellerSsn, @NotBlank String orderContactInfo, String orderPaymentMethod);
 }

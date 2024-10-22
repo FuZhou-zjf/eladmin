@@ -15,6 +15,7 @@
 */
 package me.zhengjie.seller.service.impl;
 
+import me.zhengjie.order.service.impl.OrderServiceImpl;
 import me.zhengjie.seller.domain.SellerInfo;
 import me.zhengjie.utils.ValidationUtil;
 import me.zhengjie.utils.FileUtil;
@@ -39,6 +40,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import me.zhengjie.utils.PageResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
 * @website https://eladmin.vip
@@ -52,6 +56,8 @@ public class SellerInfoServiceImpl implements SellerInfoService {
 
     private final SellerInfoRepository sellerInfoRepository;
     private final SellerInfoMapper sellerInfoMapper;
+    private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
+
 
     @Override
     public PageResult<SellerInfoDto> queryAll(SellerInfoQueryCriteria criteria, Pageable pageable){
@@ -137,6 +143,101 @@ public class SellerInfoServiceImpl implements SellerInfoService {
     public boolean checkSsnExists(String ssn) {
         return sellerInfoRepository.existsBySsn(ssn);
     }
+
+
+
+
+
+    @Override
+    public boolean existsByName(String name) {
+        return sellerInfoRepository.existsByName(name);
+    }
+
+    @Override
+    public boolean existsByNameAndContactInfo(String name, String contactInfo) {
+        return sellerInfoRepository.existsByNameAndContactInfo(name, contactInfo);
+    }
+
+    @Override
+    public boolean existsByContactInfo(String contactInfo) {
+        return sellerInfoRepository.existsByContactInfo(contactInfo);
+    }
+
+    // 查询或创建卖家信息
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public SellerInfo getOrCreateSellerWithInfo(String name, String ssn, String contactInfo, String orderPaymentMethod) {
+        // 如果推荐人姓名和联系信息为空，则直接返回 null
+        if ((name == null || name.trim().isEmpty()) &&
+                (contactInfo == null || contactInfo.trim().isEmpty())) {
+            return null;
+        }
+
+        // 如果 SSN 为空，则使用默认值 "N/A"
+        if (ssn == null || ssn.trim().isEmpty()) {
+            ssn = "N/A";
+        }
+        // 使用 Criteria 查询卖家信息
+        SellerInfoQueryCriteria criteria = new SellerInfoQueryCriteria();
+        criteria.setName(name);
+        criteria.setSsn(ssn);
+
+        List<SellerInfo> sellers = sellerInfoRepository.findAll(
+                (root, query, cb) -> QueryHelp.getPredicate(root, criteria, cb)
+        );
+
+        // 如果存在，返回第一个匹配的卖家
+        if (!sellers.isEmpty()) {
+
+            return sellers.get(0);
+
+        }
+
+//        // 如果卖家存在，更新 paymentMethod 后返回
+//        if (!sellers.isEmpty()) {
+//            SellerInfo existingSeller = sellers.get(0);
+//            existingSeller.setPaymentMethod(orderPaymentMethod);  // 设置支付方式
+//            return sellerInfoRepository.save(existingSeller);  // 保存更新
+//        }
+
+        // 否则，创建并保存新卖家信息
+        SellerInfo newSeller = new SellerInfo();
+        newSeller.setName(name);
+        newSeller.setSsn(ssn);
+        newSeller.setContactInfo(contactInfo);
+        newSeller.setPaymentMethod(orderPaymentMethod);
+        logger.info("保存卖家信息: {}", newSeller.getPaymentMethod());
+        return sellerInfoRepository.save(newSeller);
+    }
+
+    // 查询或创建推荐人信息
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public SellerInfo getOrCreateRecommender(String name, String contactInfo) {
+        SellerInfoQueryCriteria criteria = new SellerInfoQueryCriteria();
+        criteria.setName(name);
+
+        List<SellerInfo> recommenders = sellerInfoRepository.findAll(
+                (root, query, cb) -> QueryHelp.getPredicate(root, criteria, cb)
+        );
+
+        if (!recommenders.isEmpty()) {
+            return recommenders.get(0);
+        }
+
+        // 创建并保存新的推荐人信息
+        SellerInfo newRecommender = new SellerInfo();
+        newRecommender.setName(name);
+        newRecommender.setContactInfo(contactInfo);
+        return sellerInfoRepository.save(newRecommender);
+    }
+
+    @Override
+    @Transactional
+    public SellerInfo save(SellerInfo sellerInfo) {
+        return sellerInfoRepository.save(sellerInfo);
+    }
+
 
 
 }
