@@ -20,12 +20,15 @@ import cn.hutool.core.bean.BeanUtil;
 import io.swagger.annotations.ApiModelProperty;
 import cn.hutool.core.bean.copier.CopyOptions;
 import me.zhengjie.seller.domain.SellerInfo;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.sql.Timestamp;
 import java.math.BigDecimal;
 import java.io.Serializable;
+
 
 /**
 * @website https://eladmin.vip
@@ -141,10 +144,12 @@ public class Order implements Serializable {
     @ApiModelProperty(value = "佣金")
     private BigDecimal orderCommission;
 
-    @Column(name = "`order_created_at`")
+    @CreationTimestamp
+    @Column(name = "`order_created_at`",updatable = false)
     @ApiModelProperty(value = "创建时间")
     private Timestamp orderCreatedAt;
 
+    @UpdateTimestamp
     @Column(name = "`order_updated_at`")
     @ApiModelProperty(value = "更新时间")
     private Timestamp orderUpdatedAt;
@@ -152,6 +157,7 @@ public class Order implements Serializable {
     @Column(name = "`order_remark`")
     @ApiModelProperty(value = "备注")
     private String orderRemark;
+
 
     public void copy(Order source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));

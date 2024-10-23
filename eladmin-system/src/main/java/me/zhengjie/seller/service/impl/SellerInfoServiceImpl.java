@@ -210,27 +210,7 @@ public class SellerInfoServiceImpl implements SellerInfoService {
         return sellerInfoRepository.save(newSeller);
     }
 
-    // 查询或创建推荐人信息
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public SellerInfo getOrCreateRecommender(String name, String contactInfo) {
-        SellerInfoQueryCriteria criteria = new SellerInfoQueryCriteria();
-        criteria.setName(name);
 
-        List<SellerInfo> recommenders = sellerInfoRepository.findAll(
-                (root, query, cb) -> QueryHelp.getPredicate(root, criteria, cb)
-        );
-
-        if (!recommenders.isEmpty()) {
-            return recommenders.get(0);
-        }
-
-        // 创建并保存新的推荐人信息
-        SellerInfo newRecommender = new SellerInfo();
-        newRecommender.setName(name);
-        newRecommender.setContactInfo(contactInfo);
-        return sellerInfoRepository.save(newRecommender);
-    }
 
     @Override
     @Transactional

@@ -30,10 +30,6 @@ public interface SellerInfoRepository extends JpaRepository<SellerInfo, Long>, J
     boolean existsBySsn(String ssn);
 
 
-    SellerInfo findByNameAndSsn(String name, String ssn);
-
-    SellerInfo findByNameAndContactInfo(String name, String contactInfo);
-
     boolean existsByNameAndContactInfo(String name, String contactInfo);
 
     boolean existsByContactInfo(String contactInfo);

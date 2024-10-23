@@ -89,10 +89,7 @@ public interface SellerInfoService {
 
     boolean checkNameExists(String name);
 
-    /**
-     * 根据姓名和联系方式获取推荐人信息，如果不存在则创建新的推荐人
-     */
-    SellerInfo getOrCreateRecommender(String name, String contactInfo);
+
 
     boolean existsByName(String name);
 

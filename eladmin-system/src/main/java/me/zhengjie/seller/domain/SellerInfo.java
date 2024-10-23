@@ -19,11 +19,17 @@ import lombok.Data;
 import cn.hutool.core.bean.BeanUtil;
 import io.swagger.annotations.ApiModelProperty;
 import cn.hutool.core.bean.copier.CopyOptions;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.sql.Timestamp;
 import java.math.BigDecimal;
 import java.io.Serializable;
+
 
 /**
 * @website https://eladmin.vip
@@ -108,12 +114,15 @@ public class SellerInfo implements Serializable {
     @ApiModelProperty(value = "总收入")
     private BigDecimal totalIncome;
 
-    @Column(name = "`created_at`")
-    @ApiModelProperty(value = "创建时间")
+
+    /** 创建时间 */
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private Timestamp createdAt;
 
-    @Column(name = "`last_updated`")
-    @ApiModelProperty(value = "最后更新时间")
+    /** 更新时间 */
+    @UpdateTimestamp
+    @Column(name = "last_updated")
     private Timestamp lastUpdated;
 
     @Column(name = "`remarks`")
@@ -123,6 +132,8 @@ public class SellerInfo implements Serializable {
     @Column(name = "`payment_method`")
     @ApiModelProperty(value = "收款方式")
     private String paymentMethod;
+
+
 
     public void copy(SellerInfo source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));
