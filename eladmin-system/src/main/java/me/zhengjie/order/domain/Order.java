@@ -115,12 +115,12 @@ public class Order implements Serializable {
     private String orderReferrerOther;
 
     /** 卖家 */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "order_seller_id", referencedColumnName = "seller_id")
     private SellerInfo orderSeller;
 
     /** 推荐人 */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "order_referrer_id", referencedColumnName = "seller_id")
     private SellerInfo orderReferrer;
 

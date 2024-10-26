@@ -15,6 +15,8 @@
 */
 package me.zhengjie.order.service.impl;
 
+import me.zhengjie.appinfo.domain.AppInfo;
+import me.zhengjie.appinfo.service.AppInfoService;
 import me.zhengjie.order.domain.Order;
 import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.seller.domain.SellerInfo;
@@ -56,6 +58,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final SellerInfoService sellerInfoService;
+    private final AppInfoService appInfoService;
     private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
     @Override
     public PageResult<OrderDto> queryAll(OrderQueryCriteria criteria, Pageable pageable){
@@ -80,70 +83,91 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void create(Order resources) {
-        // 打印接收到的订单请求数据
         logger.info("接收到的订单请求数据: {}", resources);
 
-        // 检查订单号是否重复
-        if (orderRepository.findByOrderNumber(resources.getOrderNumber()) != null) {
-            throw new EntityExistException(Order.class, "order_number", resources.getOrderNumber());
-        }
+        // 1. 校验订单号是否重复
+        validateOrderNumber(resources.getOrderNumber());
 
-        // 获取或创建卖家信息，并确保支付方式有默认值
-        SellerInfo seller = sellerInfoService.getOrCreateSellerWithInfo(
+        // 2. 处理卖家信息
+        SellerInfo seller = handleSellerInfo(
                 resources.getOrderSellerName(),
                 resources.getOrderSellerSsn(),
                 resources.getOrderContactInfo(),
-                ensurePaymentMethod(resources.getOrderPaymentMethod(), true)  // 卖家支付方式
+                resources.getOrderPaymentMethod()
         );
         resources.setOrderSeller(seller);
 
-        // 设置订单的支付方式，确保有默认值
-        resources.setOrderPaymentMethod(ensurePaymentMethod(resources.getOrderPaymentMethod(), true));
+        // 3. 保存 App 信息并获取其 ID
+        Long appAccountId = saveAppInfo(resources);
+        resources.setOrderAppId(appAccountId);
 
-        // 如果填写了推荐人信息，处理推荐人逻辑并建档
-        if (isReferrerInfoProvided(resources)) {
-            SellerInfo recommender = sellerInfoService.getOrCreateSellerWithInfo(
-                    resources.getOrderReferrerName(),  // 推荐人姓名
-                    null,  // 推荐人没有 SSN
-                    resources.getOrderReferrerInfo(),  // 推荐人联系方式
-                    ensurePaymentMethod(resources.getOrderReferrerMethod(), false)  // 推荐人支付方式
-            );
-            resources.setOrderReferrer(recommender);
-        } else {
-            resources.setOrderReferrer(null);  // 如果推荐人信息未填写，则忽略
-        }
+        // 4. 处理推荐人信息（如果存在）
+        SellerInfo referrer = handleReferrerInfo(resources);
+        resources.setOrderReferrer(referrer);
 
-        // 打印日志
-        logger.info("后推荐人信息: {}", resources.getOrderReferrer());
-        logger.info("订单支付方式: {}", resources.getOrderPaymentMethod());
-        logger.info("完整表单信息: {}", resources);
-
-        // 保存订单
+        // 5. 保存订单并打印日志
         orderRepository.save(resources);
+        logger.info("订单保存成功: {}", resources);
     }
 
-    /**
-     * 确保支付方式有默认值。
-     * @param paymentMethod 支付方式
-     * @param isSeller 是否为卖家
-     * @return 最终保存的支付方式
-     */
-    private String ensurePaymentMethod(String paymentMethod, boolean isSeller) {
-        if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
-            return "未提供";  // 无论卖家或推荐人都返回默认值 "未提供"
+    // 校验订单号是否重复
+    private void validateOrderNumber(String orderNumber) {
+        if (orderRepository.findByOrderNumber(orderNumber) != null) {
+            throw new EntityExistException(Order.class, "order_number", orderNumber);
         }
-        return paymentMethod;
     }
 
-    /**
-     * 判断是否填写了推荐人信息。
-     * @param resources 订单资源
-     * @return true 如果填写了推荐人姓名和联系方式，否则 false
-     */
+    // 处理卖家信息
+    private SellerInfo handleSellerInfo(String name, String ssn, String contactInfo, String paymentMethod) {
+        return sellerInfoService.getOrCreateSellerWithInfo(
+                name,
+                ssn,
+                contactInfo,
+                ensurePaymentMethod(paymentMethod, true)
+        );
+    }
+
+    // 保存 App 信息并返回其 ID
+    private Long saveAppInfo(Order resources) {
+        AppInfo appInfo = new AppInfo();
+        appInfo.setAccountUsername(resources.getOrderAccountUsername());
+        appInfo.setAccountPassword(resources.getOrderAccountPassword());
+        appInfo.setAppName(resources.getOrderAppName());
+        appInfo.setFullName(resources.getOrderSellerName());
+        appInfo.setSsn(resources.getOrderSellerSsn());
+        appInfo.setAccountStatus(resources.getOrderStatus());
+        appInfo.setPhoneNumber(resources.getOrderContactInfo());
+        // 保存 App 信息
+        appInfoService.create(appInfo);
+
+        // 返回 accountId
+        return appInfo.getAccountId();
+    }
+
+    // 处理推荐人信息（如果提供）
+    private SellerInfo handleReferrerInfo(Order resources) {
+        if (isReferrerInfoProvided(resources)) {
+            return sellerInfoService.getOrCreateSellerWithInfo(
+                    resources.getOrderReferrerName(),
+                    null,
+                    resources.getOrderReferrerInfo(),
+                    ensurePaymentMethod(resources.getOrderReferrerMethod(), false)
+            );
+        }
+        return null;
+    }
+
+    // 判断是否填写了推荐人信息
     private boolean isReferrerInfoProvided(Order resources) {
         return resources.getOrderReferrerName() != null && !resources.getOrderReferrerName().trim().isEmpty()
                 && resources.getOrderReferrerInfo() != null && !resources.getOrderReferrerInfo().trim().isEmpty();
     }
+
+    // 确保支付方式有默认值
+    private String ensurePaymentMethod(String paymentMethod, boolean isSeller) {
+        return (paymentMethod == null || paymentMethod.trim().isEmpty()) ? "未提供" : paymentMethod;
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(Order resources) {
