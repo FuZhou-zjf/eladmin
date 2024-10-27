@@ -40,9 +40,10 @@ public class AppInfoQueryCriteria{
     @Query
     private String accountStatus;
 
-    /** 小于等于 */
-    @Query(type = Query.Type.LESS_THAN)
-    private Timestamp createdAt;
+    /** 日期范围查询 */
+    @Query(type = Query.Type.BETWEEN, propName = "createdAt")
+    private List<Timestamp> createdAt;
+
 
     /** 模糊 */
     @Query(type = Query.Type.INNER_LIKE)

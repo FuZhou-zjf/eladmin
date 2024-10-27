@@ -24,18 +24,25 @@ import me.zhengjie.appinfo.service.AppInfoService;
 import me.zhengjie.appinfo.service.dto.AppInfoDto;
 import me.zhengjie.appinfo.service.dto.AppInfoQueryCriteria;
 import me.zhengjie.appinfo.service.mapstruct.AppInfoMapper;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import me.zhengjie.utils.PageUtil;
 import me.zhengjie.utils.QueryHelp;
+
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.io.IOException;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import javax.persistence.criteria.Predicate;
+
 import me.zhengjie.utils.PageResult;
 
 /**
@@ -89,6 +96,25 @@ public class AppInfoServiceImpl implements AppInfoService {
     public void deleteAll(Long[] ids) {
         for (Long accountId : ids) {
             appInfoRepository.deleteById(accountId);
+        }
+    }
+
+    private Specification<AppInfo> createSpecification(AppInfoQueryCriteria criteria) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // 添加日期范围查询
+            addDateRangePredicate(predicates, root, cb, criteria.getCreatedAt());
+
+            // 其他查询条件...
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    private void addDateRangePredicate(List<Predicate> predicates, Root<AppInfo> root,
+                                       CriteriaBuilder cb, List<Timestamp> createdAt) {
+        if (createdAt != null && createdAt.size() == 2) {
+            predicates.add(cb.between(root.get("createdAt"), createdAt.get(0), createdAt.get(1)));
         }
     }
 

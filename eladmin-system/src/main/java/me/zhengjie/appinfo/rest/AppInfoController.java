@@ -19,6 +19,7 @@ import me.zhengjie.annotation.Log;
 import me.zhengjie.appinfo.domain.AppInfo;
 import me.zhengjie.appinfo.service.AppInfoService;
 import me.zhengjie.appinfo.service.dto.AppInfoQueryCriteria;
+import me.zhengjie.utils.DateQuery;
 import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,11 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.*;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import me.zhengjie.utils.PageResult;
 import me.zhengjie.appinfo.service.dto.AppInfoDto;
@@ -54,12 +60,23 @@ public class AppInfoController {
     }
 
     @GetMapping
-    @Log("查询app账号管理")
-    @ApiOperation("查询app账号管理")
+    @Log("查询App账号管理")
+    @ApiOperation("查询App账号管理")
     @PreAuthorize("@el.check('appInfo:list')")
-    public ResponseEntity<PageResult<AppInfoDto>> queryAppInfo(AppInfoQueryCriteria criteria, Pageable pageable){
-        return new ResponseEntity<>(appInfoService.queryAll(criteria,pageable),HttpStatus.OK);
+    public ResponseEntity<PageResult<AppInfoDto>> queryAppInfo(
+            AppInfoQueryCriteria criteria,
+            Pageable pageable,
+            @RequestParam(value = "createTime", required = false) List<String> createTimeStrs) {
+
+        // 如果前端传递了日期范围，则解析并设置到查询条件对象中
+        if (createTimeStrs != null && createTimeStrs.size() == 2) {
+            List<Timestamp> createTime = DateQuery.parseTimestamps(createTimeStrs);
+            criteria.setCreatedAt(createTime);
+        }
+
+        return new ResponseEntity<>(appInfoService.queryAll(criteria, pageable), HttpStatus.OK);
     }
+
 
     @PostMapping
     @Log("新增app账号管理")

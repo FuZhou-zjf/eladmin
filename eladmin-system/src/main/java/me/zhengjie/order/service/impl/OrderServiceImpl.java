@@ -31,20 +31,25 @@ import me.zhengjie.order.service.dto.OrderQueryCriteria;
 import me.zhengjie.order.service.mapstruct.OrderMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import me.zhengjie.utils.PageUtil;
 import me.zhengjie.utils.QueryHelp;
+
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.io.IOException;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import me.zhengjie.utils.PageResult;
-
+import javax.persistence.criteria.Predicate;               // 查询条件的谓词
 /**
 * @website https://eladmin.vip
 * @description 服务实现
@@ -166,6 +171,34 @@ public class OrderServiceImpl implements OrderService {
     // 确保支付方式有默认值
     private String ensurePaymentMethod(String paymentMethod, boolean isSeller) {
         return (paymentMethod == null || paymentMethod.trim().isEmpty()) ? "未提供" : paymentMethod;
+    }
+
+
+    //自定义日期查询范围
+    private Specification<Order> createSpecification(OrderQueryCriteria criteria) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // 订单号模糊查询
+            if (criteria.getOrderNumber() != null) {
+                predicates.add(cb.like(root.get("orderNumber"), "%" + criteria.getOrderNumber() + "%"));
+            }
+
+            // 添加日期范围查询
+            addDateRangePredicate(predicates, root, cb, criteria.getOrderCreatedAt());
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+    private void addDateRangePredicate(List<Predicate> predicates, Root<Order> root,
+                                       CriteriaBuilder cb, List<Timestamp> orderCreatedAt) {
+        if (orderCreatedAt != null && orderCreatedAt.size() == 2) {
+            predicates.add(cb.between(
+                    root.get("orderCreatedAt"),
+                    orderCreatedAt.get(0),
+                    orderCreatedAt.get(1)
+            ));
+        }
     }
 
     @Override

@@ -19,6 +19,7 @@ import me.zhengjie.annotation.Log;
 import me.zhengjie.order.domain.Order;
 import me.zhengjie.order.service.OrderService;
 import me.zhengjie.order.service.dto.OrderQueryCriteria;
+import me.zhengjie.utils.DateQuery;
 import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.*;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import me.zhengjie.utils.PageResult;
 import me.zhengjie.order.service.dto.OrderDto;
@@ -57,9 +60,19 @@ public class OrderController {
     @Log("查询订单管理")
     @ApiOperation("查询订单管理")
     @PreAuthorize("@el.check('order:list')")
-    public ResponseEntity<PageResult<OrderDto>> queryOrder(OrderQueryCriteria criteria, Pageable pageable){
+    public ResponseEntity<PageResult<OrderDto>> queryOrder(
+            OrderQueryCriteria criteria, // 查询条件对象
+            Pageable pageable,            // 分页参数
+            @RequestParam(value = "createTime", required = false) List<String> createTimeStrs) {
 
-        return new ResponseEntity<>(orderService.queryAll(criteria,pageable),HttpStatus.OK);
+        // 如果前端传递了日期范围参数，则解析并设置到查询条件中
+        if (createTimeStrs != null && createTimeStrs.size() == 2) {
+            List<Timestamp> createTime = DateQuery.parseTimestamps(createTimeStrs);
+            criteria.setOrderCreatedAt(createTime);
+        }
+
+        // 将封装好的查询条件传递给 Service 层
+        return new ResponseEntity<>(orderService.queryAll(criteria, pageable), HttpStatus.OK);
     }
 
     @PostMapping

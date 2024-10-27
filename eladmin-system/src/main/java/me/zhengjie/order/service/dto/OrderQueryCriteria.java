@@ -16,6 +16,8 @@
 package me.zhengjie.order.service.dto;
 
 import lombok.Data;
+
+import java.sql.Timestamp;
 import java.util.List;
 import me.zhengjie.annotation.Query;
 
@@ -46,4 +48,8 @@ public class OrderQueryCriteria{
     /** 模糊 */
     @Query(type = Query.Type.INNER_LIKE)
     private String orderContactInfo;
+
+    /** 日期范围查询 */
+    @Query(type = Query.Type.BETWEEN, propName = "orderCreatedAt")
+    private List<Timestamp> orderCreatedAt;
 }
