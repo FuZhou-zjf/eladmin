@@ -17,6 +17,8 @@ package me.zhengjie.order.service.impl;
 
 import me.zhengjie.appinfo.domain.AppInfo;
 import me.zhengjie.appinfo.service.AppInfoService;
+import me.zhengjie.finance.repository.FinanceRecordsRepository;
+import me.zhengjie.finance.service.FinanceRecordsService;
 import me.zhengjie.order.domain.Order;
 import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.seller.domain.SellerInfo;
@@ -38,7 +40,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import me.zhengjie.utils.PageUtil;
 import me.zhengjie.utils.QueryHelp;
-
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import me.zhengjie.utils.PageResult;
+import springfox.documentation.spring.web.DocumentationCache;
+
 import javax.persistence.criteria.Predicate;               // 查询条件的谓词
 /**
 * @website https://eladmin.vip
@@ -64,7 +67,10 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final SellerInfoService sellerInfoService;
     private final AppInfoService appInfoService;
+    private final FinanceRecordsService financeRecordsService;
     private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
+    private final DocumentationCache resourceGroupCache;
+
     @Override
     public PageResult<OrderDto> queryAll(OrderQueryCriteria criteria, Pageable pageable){
         Page<Order> page = orderRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root,criteria,criteriaBuilder),pageable);
@@ -113,6 +119,10 @@ public class OrderServiceImpl implements OrderService {
         // 5. 保存订单并打印日志
         orderRepository.save(resources);
         logger.info("订单保存成功: {}", resources);
+
+
+        // 6. 订单保存成功后，生成财务记录
+        financeRecordsService.createFinanceRecordsForOrder(resources);
     }
 
     // 校验订单号是否重复
@@ -187,6 +197,7 @@ public class OrderServiceImpl implements OrderService {
             // 添加日期范围查询
             addDateRangePredicate(predicates, root, cb, criteria.getOrderCreatedAt());
 
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
@@ -205,14 +216,50 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(rollbackFor = Exception.class)
     public void update(Order resources) {
         Order order = orderRepository.findById(resources.getOrderId()).orElseGet(Order::new);
-        ValidationUtil.isNull( order.getOrderId(),"Order","id",resources.getOrderId());
-        Order order1 = null;
-        order1 = orderRepository.findByOrderNumber(resources.getOrderNumber());
-        if(order1 != null && !order1.getOrderId().equals(order.getOrderId())){
-            throw new EntityExistException(Order.class,"order_number",resources.getOrderNumber());
+        ValidationUtil.isNull(order.getOrderId(), "Order", "orderId", resources.getOrderId());
+
+        // 检查订单号是否重复
+        Order existingOrder = orderRepository.findByOrderNumber(resources.getOrderNumber());
+        if (existingOrder != null && !existingOrder.getOrderId().equals(order.getOrderId())) {
+            throw new EntityExistException(Order.class, "order_number", resources.getOrderNumber());
         }
+
+        // 检查财务相关数据是否发生变化
+        boolean isFinancialDataChanged = isFinancialDataChanged(order, resources);
+
+        // 复制属性并保存订单
         order.copy(resources);
         orderRepository.save(order);
+
+        // 如果财务数据发生了变化，更新财务记录
+        if (isFinancialDataChanged) {
+            financeRecordsService.updateFinanceRecordsForOrder(order);
+        }
+    }
+
+    // 检查财务相关数据是否发生变化
+    private boolean isFinancialDataChanged(Order oldOrder, Order newOrder) {
+        // 比较订单金额
+        boolean isAmountChanged = (oldOrder.getOrderAmount() == null && newOrder.getOrderAmount() != null)
+                || (oldOrder.getOrderAmount() != null && !oldOrder.getOrderAmount().equals(newOrder.getOrderAmount()));
+
+        // 比较佣金
+        boolean isCommissionChanged = (oldOrder.getOrderCommission() == null && newOrder.getOrderCommission() != null)
+                || (oldOrder.getOrderCommission() != null && !oldOrder.getOrderCommission().equals(newOrder.getOrderCommission()));
+
+        // 比较推荐费
+        boolean isReferralFeeChanged = (oldOrder.getOrderReferralFee() == null && newOrder.getOrderReferralFee() != null)
+                || (oldOrder.getOrderReferralFee() != null && !oldOrder.getOrderReferralFee().equals(newOrder.getOrderReferralFee()));
+
+        // 比较订单创建日期
+        boolean isDateChanged = (oldOrder.getOrderCreatedAt() == null && newOrder.getOrderCreatedAt() != null)
+                || (oldOrder.getOrderCreatedAt() != null && !oldOrder.getOrderCreatedAt().equals(newOrder.getOrderCreatedAt()));
+
+        // 比较备注
+        boolean isRemarkChanged = (oldOrder.getOrderRemark() == null && newOrder.getOrderRemark() != null)
+                || (oldOrder.getOrderRemark() != null && !oldOrder.getOrderRemark().equals(newOrder.getOrderRemark()));
+
+        return isAmountChanged || isCommissionChanged || isReferralFeeChanged || isDateChanged || isRemarkChanged;
     }
 
     @Override
