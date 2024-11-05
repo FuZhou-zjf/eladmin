@@ -18,7 +18,7 @@ build/
 
 # Docker 相关文件
 *.pid
-docker-compose.override.yml
+docker-compose.yml
 /var/lib/docker/
 
 # NPM 缓存和构建
