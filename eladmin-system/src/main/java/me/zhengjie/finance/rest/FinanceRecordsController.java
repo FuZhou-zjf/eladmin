@@ -62,7 +62,7 @@ public class FinanceRecordsController {
 public ResponseEntity<PageResult<FinanceRecordsDto>> queryFinanceRecords(
         FinanceRecordsQueryCriteria criteria, // 查询条件对象
         Pageable pageable,                    // 分页参数
-        @RequestParam(value = "createTime", required = false) List<String> createTimeStrs) {
+        @RequestParam(value = "date", required = false) List<String> createTimeStrs) {
 
     // 如果前端传递了日期范围参数，则解析并设置到查询条件中
     if (createTimeStrs != null && createTimeStrs.size() == 2) {
