@@ -34,6 +34,8 @@ import io.swagger.annotations.*;
 import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
 * @author Zheng Jie
@@ -64,9 +66,25 @@ public class LocalStorageController {
     @PostMapping
     @ApiOperation("上传文件")
     @PreAuthorize("@el.check('storage:add')")
-    public ResponseEntity<Object> createFile(@RequestParam String name, @RequestParam("file") MultipartFile file){
-        localStorageService.create(name, file);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<Map<String, Object>> createFile(@RequestParam String name, @RequestParam("file") MultipartFile file) {
+        LocalStorage localStorage = localStorageService.create(name, file);
+
+        // 构建返回的数据结构
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", 201); // 表示已创建
+        response.put("message", "文件上传成功");
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", localStorage.getId());
+        data.put("realName", localStorage.getRealName());
+        data.put("name", localStorage.getName());
+        data.put("path", localStorage.getPath());
+        data.put("type", localStorage.getType());
+        data.put("size", localStorage.getSize());
+
+        response.put("data", data);
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED); // 返回201状态码和文件信息
     }
 
     @ApiOperation("上传图片")
