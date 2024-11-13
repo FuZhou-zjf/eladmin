@@ -56,6 +56,8 @@ public class OrderDto implements Serializable {
     /** 卖家名称 */
     private String orderSellerName;
 
+    private String orderSellerNickname;
+
     /** 卖家SSN */
     private String orderSellerSsn;
 

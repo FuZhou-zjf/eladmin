@@ -158,6 +158,10 @@ public class Order implements Serializable {
     @ApiModelProperty(value = "备注")
     private String orderRemark;
 
+    @Column(name = "`order_seller_nickname`")
+    @ApiModelProperty(value = "卖家昵称")
+    private  String orderSellerNickname;
+
 
     public void copy(Order source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));

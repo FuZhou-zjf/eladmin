@@ -106,6 +106,13 @@ public class OrderServiceImpl implements OrderService {
         );
         resources.setOrderSeller(seller);
 
+        // 拼接 nickname：name + phone 后四位
+        String nickname = resources.getOrderSellerName() + resources.getOrderContactInfo().substring(resources.getOrderContactInfo().length() - 4);
+        resources.setOrderSellerNickname(nickname);
+        seller.setNickName(nickname);
+        sellerInfoService.save(seller);
+
+
         // 3. 保存 App 信息并获取其 ID
         Long appAccountId = saveAppInfo(resources);
         resources.setOrderAppId(appAccountId);
@@ -121,6 +128,8 @@ public class OrderServiceImpl implements OrderService {
 
         // 6. 订单保存成功后，生成财务记录
         financeRecordsService.createFinanceRecordsForOrder(resources);
+
+
     }
 
     // 校验订单号是否重复
@@ -166,6 +175,7 @@ public class OrderServiceImpl implements OrderService {
                     resources.getOrderReferrerInfo(),
                     ensurePaymentMethod(resources.getOrderReferrerMethod(), false)
             );
+
         }
         return null;
     }
