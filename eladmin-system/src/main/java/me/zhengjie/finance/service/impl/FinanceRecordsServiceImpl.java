@@ -25,6 +25,8 @@
     import me.zhengjie.finance.service.dto.FinanceRecordsDto;
     import me.zhengjie.finance.service.dto.FinanceRecordsQueryCriteria;
     import me.zhengjie.finance.service.mapstruct.FinanceRecordsMapper;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import org.springframework.stereotype.Service;
     import org.springframework.transaction.annotation.Transactional;
     import org.springframework.data.domain.Page;
@@ -53,6 +55,8 @@
 
         private final FinanceRecordsRepository financeRecordsRepository;
         private final FinanceRecordsMapper financeRecordsMapper;
+        private static final Logger logger = LoggerFactory.getLogger(FinanceRecordsServiceImpl.class);
+
 
         @Override
         public PageResult<FinanceRecordsDto> queryAll(FinanceRecordsQueryCriteria criteria, Pageable pageable) {
@@ -119,19 +123,66 @@
         public void createFinanceRecordsForOrder(Order resources) {
             // 销售收入记录
             if (resources.getOrderAmount() != null && resources.getOrderAmount().compareTo(BigDecimal.ZERO) > 0) {
-                createFinanceRecord(resources.getOrderId(), resources.getOrderEmployeeId(), "employee", "amount", "income", resources.getOrderAmount(),resources.getOrderCreatedAt(),resources.getOrderRemark());
+                createFinanceRecord(
+                        resources.getOrderId(),
+                        resources.getOrderEmployeeId(),
+                        "employee",
+                        "amount",
+                        "income",
+                        resources.getOrderAmount(),
+                        resources.getOrderCreatedAt(),
+                        resources.getOrderRemark()
+                );
+            } else {
+                // 添加日志记录
+                logger.warn("无法创建销售收入财务记录，订单金额无效。订单ID：" + resources.getOrderId());
             }
 
             // 卖家佣金记录
             if (resources.getOrderCommission() != null && resources.getOrderCommission().compareTo(BigDecimal.ZERO) > 0) {
-                createFinanceRecord(resources.getOrderId(), resources.getOrderSeller().getSellerId(), "seller", "commission", "expense", resources.getOrderCommission(),resources.getOrderCreatedAt(),resources.getOrderRemark());
+                if (resources.getOrderSeller() != null && resources.getOrderSeller().getSellerId() != null) {
+                    createFinanceRecord(
+                            resources.getOrderId(),
+                            resources.getOrderSeller().getSellerId(),
+                            "seller",
+                            "commission",
+                            "expense",
+                            resources.getOrderCommission(),
+                            resources.getOrderCreatedAt(),
+                            resources.getOrderRemark()
+                    );
+                } else {
+                    // 添加日志记录
+                    logger.warn("无法创建卖家佣金财务记录，卖家信息缺失或无效。订单ID：" + resources.getOrderId());
+                }
+            } else {
+                // 添加日志记录
+                logger.warn("无法创建卖家佣金财务记录，佣金金额无效。订单ID：" + resources.getOrderId());
             }
 
             // 推荐费记录
             if (resources.getOrderReferralFee() != null && resources.getOrderReferralFee().compareTo(BigDecimal.ZERO) > 0) {
-                createFinanceRecord(resources.getOrderId(), resources.getOrderReferrer().getSellerId(), "referrer", "referral_fee", "expense", resources.getOrderReferralFee(),resources.getOrderCreatedAt(),resources.getOrderRemark());
+                if (resources.getOrderReferrer() != null && resources.getOrderReferrer().getSellerId() != null) {
+                    createFinanceRecord(
+                            resources.getOrderId(),
+                            resources.getOrderReferrer().getSellerId(),
+                            "referrer",
+                            "referral_fee",
+                            "expense",
+                            resources.getOrderReferralFee(),
+                            resources.getOrderCreatedAt(),
+                            resources.getOrderRemark()
+                    );
+                } else {
+                    // 添加日志记录
+                    logger.warn("无法创建推荐费财务记录，推荐人信息缺失或无效。订单ID：" + resources.getOrderId());
+                }
+            } else {
+                // 添加日志记录
+                logger.warn("无法创建推荐费财务记录，推荐费金额无效。订单ID：" + resources.getOrderId());
             }
         }
+
 
         private void createFinanceRecord(Long orderId, Long accountId, String accountType, String category, String type, BigDecimal amount, Timestamp date, String description) {
             if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {

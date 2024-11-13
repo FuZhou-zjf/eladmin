@@ -6,7 +6,7 @@ services:
     container_name: mariadb
     environment:
       - MYSQL_ROOT_PASSWORD=123456
-      - MYSQL_DATABASE=your_database_name
+      - MYSQL_DATABASE=eladmin
     ports:
       - "3306:3306"
     volumes:

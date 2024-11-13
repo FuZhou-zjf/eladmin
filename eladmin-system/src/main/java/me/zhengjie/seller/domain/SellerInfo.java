@@ -29,6 +29,7 @@ import javax.validation.constraints.*;
 import java.sql.Timestamp;
 import java.math.BigDecimal;
 import java.io.Serializable;
+import java.util.Objects;
 
 
 /**
@@ -52,6 +53,10 @@ public class SellerInfo implements Serializable {
     @NotBlank
     @ApiModelProperty(value = "卖家姓名")
     private String name;
+
+    @Column(name = "`nickname`")
+    @ApiModelProperty(value = "卖家昵称")
+    private String nickName;
 
     @Column(name = "`contact_info`",nullable = false)
     @NotBlank
@@ -133,7 +138,18 @@ public class SellerInfo implements Serializable {
     @ApiModelProperty(value = "收款方式")
     private String paymentMethod;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SellerInfo)) return false;
+        SellerInfo that = (SellerInfo) o;
+        return Objects.equals(sellerId, that.sellerId);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(sellerId);
+    }
 
     public void copy(SellerInfo source){
         BeanUtil.copyProperties(source,this, CopyOptions.create().setIgnoreNullValue(true));

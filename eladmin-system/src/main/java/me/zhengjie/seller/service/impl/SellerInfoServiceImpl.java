@@ -193,14 +193,6 @@ public class SellerInfoServiceImpl implements SellerInfoService {
 
         }
 
-//        // 如果卖家存在，更新 paymentMethod 后返回
-//        if (!sellers.isEmpty()) {
-//            SellerInfo existingSeller = sellers.get(0);
-//            existingSeller.setPaymentMethod(orderPaymentMethod);  // 设置支付方式
-//            return sellerInfoRepository.save(existingSeller);  // 保存更新
-//        }
-
-        // 否则，创建并保存新卖家信息
         SellerInfo newSeller = new SellerInfo();
         newSeller.setName(name);
         newSeller.setSsn(ssn);

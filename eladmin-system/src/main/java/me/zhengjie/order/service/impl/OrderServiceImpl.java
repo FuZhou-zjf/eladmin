@@ -41,14 +41,12 @@ import org.springframework.data.domain.Pageable;
 import me.zhengjie.utils.PageUtil;
 import me.zhengjie.utils.QueryHelp;
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.io.IOException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+
 import me.zhengjie.utils.PageResult;
 import springfox.documentation.spring.web.DocumentationCache;
 
@@ -69,7 +67,7 @@ public class OrderServiceImpl implements OrderService {
     private final AppInfoService appInfoService;
     private final FinanceRecordsService financeRecordsService;
     private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
-    private final DocumentationCache resourceGroupCache;
+
 
     @Override
     public PageResult<OrderDto> queryAll(OrderQueryCriteria criteria, Pageable pageable){
@@ -164,7 +162,7 @@ public class OrderServiceImpl implements OrderService {
         if (isReferrerInfoProvided(resources)) {
             return sellerInfoService.getOrCreateSellerWithInfo(
                     resources.getOrderReferrerName(),
-                    null,
+                    null,  // 假设推荐人没有提供SSN
                     resources.getOrderReferrerInfo(),
                     ensurePaymentMethod(resources.getOrderReferrerMethod(), false)
             );
@@ -224,6 +222,10 @@ public class OrderServiceImpl implements OrderService {
             throw new EntityExistException(Order.class, "order_number", resources.getOrderNumber());
         }
 
+        // **处理推荐人信息**
+        SellerInfo referrer = handleReferrerInfo(resources);
+        resources.setOrderReferrer(referrer);
+
         // 检查财务相关数据是否发生变化
         boolean isFinancialDataChanged = isFinancialDataChanged(order, resources);
 
@@ -239,27 +241,14 @@ public class OrderServiceImpl implements OrderService {
 
     // 检查财务相关数据是否发生变化
     private boolean isFinancialDataChanged(Order oldOrder, Order newOrder) {
-        // 比较订单金额
-        boolean isAmountChanged = (oldOrder.getOrderAmount() == null && newOrder.getOrderAmount() != null)
-                || (oldOrder.getOrderAmount() != null && !oldOrder.getOrderAmount().equals(newOrder.getOrderAmount()));
+        boolean isAmountChanged = !Objects.equals(oldOrder.getOrderAmount(), newOrder.getOrderAmount());
+        boolean isCommissionChanged = !Objects.equals(oldOrder.getOrderCommission(), newOrder.getOrderCommission());
+        boolean isReferralFeeChanged = !Objects.equals(oldOrder.getOrderReferralFee(), newOrder.getOrderReferralFee());
+        boolean isDateChanged = !Objects.equals(oldOrder.getOrderCreatedAt(), newOrder.getOrderCreatedAt());
+        boolean isRemarkChanged = !Objects.equals(oldOrder.getOrderRemark(), newOrder.getOrderRemark());
+        boolean isReferrerChanged = !Objects.equals(oldOrder.getOrderReferrer(), newOrder.getOrderReferrer());
 
-        // 比较佣金
-        boolean isCommissionChanged = (oldOrder.getOrderCommission() == null && newOrder.getOrderCommission() != null)
-                || (oldOrder.getOrderCommission() != null && !oldOrder.getOrderCommission().equals(newOrder.getOrderCommission()));
-
-        // 比较推荐费
-        boolean isReferralFeeChanged = (oldOrder.getOrderReferralFee() == null && newOrder.getOrderReferralFee() != null)
-                || (oldOrder.getOrderReferralFee() != null && !oldOrder.getOrderReferralFee().equals(newOrder.getOrderReferralFee()));
-
-        // 比较订单创建日期
-        boolean isDateChanged = (oldOrder.getOrderCreatedAt() == null && newOrder.getOrderCreatedAt() != null)
-                || (oldOrder.getOrderCreatedAt() != null && !oldOrder.getOrderCreatedAt().equals(newOrder.getOrderCreatedAt()));
-
-        // 比较备注
-        boolean isRemarkChanged = (oldOrder.getOrderRemark() == null && newOrder.getOrderRemark() != null)
-                || (oldOrder.getOrderRemark() != null && !oldOrder.getOrderRemark().equals(newOrder.getOrderRemark()));
-
-        return isAmountChanged || isCommissionChanged || isReferralFeeChanged || isDateChanged || isRemarkChanged;
+        return isAmountChanged || isCommissionChanged || isReferralFeeChanged || isDateChanged || isRemarkChanged || isReferrerChanged;
     }
 
     @Override
