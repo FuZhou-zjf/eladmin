@@ -102,6 +102,10 @@ public class Order implements Serializable {
     @ApiModelProperty(value = "推荐人名称")
     private String orderReferrerName;
 
+    @Column(name = "`order_referrer_nickname`")
+    @ApiModelProperty(value = "推荐人昵称")
+    private String orderReferrerNickname;
+
     @Column(name = "`order_referrer_ssn`")
     @ApiModelProperty(value = "推荐人SSN")
     private String orderReferrerSsn;

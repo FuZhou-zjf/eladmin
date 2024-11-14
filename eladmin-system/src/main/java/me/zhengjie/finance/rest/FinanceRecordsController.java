@@ -78,8 +78,7 @@ public ResponseEntity<PageResult<FinanceRecordsDto>> queryFinanceRecords(
     @ApiOperation("按条件查询财务管理")
     @PreAuthorize("@el.check('financeRecords:list')")
     public ResponseEntity<PageResult<FinanceRecordsDto>> queryFinanceRecordsByCriteria(FinanceRecordsQueryCriteria criteria, Pageable pageable){
-        System.out.println("Received query criteria: " + criteria);
-        System.out.println("Received pageable: " + pageable);
+
         return new ResponseEntity<>(financeRecordsService.queryAll(criteria, pageable), HttpStatus.OK);
     }
 

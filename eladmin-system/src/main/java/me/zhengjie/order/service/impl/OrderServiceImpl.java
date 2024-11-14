@@ -46,10 +46,7 @@ import java.io.IOException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletResponse;
-
 import me.zhengjie.utils.PageResult;
-import springfox.documentation.spring.web.DocumentationCache;
-
 import javax.persistence.criteria.Predicate;               // 查询条件的谓词
 /**
 * @website https://eladmin.vip
@@ -121,6 +118,7 @@ public class OrderServiceImpl implements OrderService {
         SellerInfo referrer = handleReferrerInfo(resources);
         resources.setOrderReferrer(referrer);
 
+
         // 5. 保存订单并打印日志
         orderRepository.save(resources);
         logger.info("订单保存成功: {}", resources);
@@ -128,7 +126,6 @@ public class OrderServiceImpl implements OrderService {
 
         // 6. 订单保存成功后，生成财务记录
         financeRecordsService.createFinanceRecordsForOrder(resources);
-
 
     }
 
@@ -169,13 +166,21 @@ public class OrderServiceImpl implements OrderService {
     // 处理推荐人信息（如果提供）
     private SellerInfo handleReferrerInfo(Order resources) {
         if (isReferrerInfoProvided(resources)) {
-            return sellerInfoService.getOrCreateSellerWithInfo(
+            // 处理推荐人信息，拼接昵称
+            SellerInfo referrer = sellerInfoService.getOrCreateSellerWithInfo(
                     resources.getOrderReferrerName(),
                     null,  // 假设推荐人没有提供SSN
                     resources.getOrderReferrerInfo(),
                     ensurePaymentMethod(resources.getOrderReferrerMethod(), false)
             );
 
+            // 拼接推荐人昵称：name + phone 后四位
+            String referrerNickname = resources.getOrderReferrerName() + resources.getOrderReferrerInfo().substring(resources.getOrderReferrerInfo().length() - 4);
+            resources.setOrderReferrerNickname(referrerNickname);
+            referrer.setNickName(referrerNickname);  // 保存推荐人昵称
+            sellerInfoService.save(referrer);  // 保存推荐人的信息
+
+            return referrer;
         }
         return null;
     }

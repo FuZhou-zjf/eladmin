@@ -76,6 +76,8 @@ public class OrderDto implements Serializable {
     /** 推荐人名称 */
     private String orderReferrerName;
 
+    private String orderReferrerNickname;
+
     /** 推荐人SSN */
     private String orderReferrerSsn;
 

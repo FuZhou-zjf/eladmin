@@ -42,6 +42,9 @@ public class FinanceRecordsQueryCriteria{
     @Query
     private String category;
 
+    @Query
+    private String type;
+
     /** 范围查询，起始日期 */
     @Query(type = Query.Type.GREATER_THAN, propName = "date")
     private Timestamp startDate;
