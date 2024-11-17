@@ -49,6 +49,11 @@ public class FinanceRecords implements Serializable {
     @ApiModelProperty(value = "订单ID")
     private Long orderId;
 
+    @Column(name = "`order_number`")
+    @ApiModelProperty(value = "订单编号")
+    private String orderNumber;
+
+
     @Column(name = "`date`")
     @ApiModelProperty(value = "交易日期")
     private Timestamp date;
@@ -56,6 +61,10 @@ public class FinanceRecords implements Serializable {
     @Column(name = "`account_id`")
     @ApiModelProperty(value = "账户ID")
     private Long accountId;
+
+    @Column(name = "`account_name`")
+    @ApiModelProperty(value = "账号名称")
+    private String accountName;
 
     @Column(name = "`account_type`")
     @ApiModelProperty(value = "账户类型: 员工/卖家/推荐人")
@@ -66,7 +75,7 @@ public class FinanceRecords implements Serializable {
     private String type;
 
     @Column(name = "`category`")
-    @ApiModelProperty(value = "交易类别: 销售/佣金/推荐费")
+    @ApiModelProperty(value = "交易类别: 销售/佣金/推荐费/收款/付款")
     private String category;
 
     @Column(name = "`amount`")

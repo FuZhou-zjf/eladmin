@@ -16,6 +16,7 @@
 package me.zhengjie.appinfo.service.impl;
 
 import me.zhengjie.appinfo.domain.AppInfo;
+import me.zhengjie.finance.service.FinanceRecordsService;
 import me.zhengjie.utils.ValidationUtil;
 import me.zhengjie.utils.FileUtil;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ import org.springframework.data.domain.Pageable;
 import me.zhengjie.utils.PageUtil;
 import me.zhengjie.utils.QueryHelp;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +44,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import javax.persistence.criteria.Predicate;
-
 import me.zhengjie.utils.PageResult;
+import me.zhengjie.utils.SecurityUtils;
 
 /**
 * @website https://eladmin.vip
@@ -57,6 +59,7 @@ public class AppInfoServiceImpl implements AppInfoService {
 
     private final AppInfoRepository appInfoRepository;
     private final AppInfoMapper appInfoMapper;
+    private final FinanceRecordsService financeRecordsService;
 
     @Override
     public PageResult<AppInfoDto> queryAll(AppInfoQueryCriteria criteria, Pageable pageable){
@@ -81,6 +84,7 @@ public class AppInfoServiceImpl implements AppInfoService {
     @Transactional(rollbackFor = Exception.class)
     public void create(AppInfo resources) {
         appInfoRepository.save(resources);
+        financeRecordsService.createFinanceRecordsForApp(resources);
     }
 
     @Override
@@ -90,6 +94,7 @@ public class AppInfoServiceImpl implements AppInfoService {
         ValidationUtil.isNull( appInfo.getAccountId(),"AppInfo","id",resources.getAccountId());
         appInfo.copy(resources);
         appInfoRepository.save(appInfo);
+        financeRecordsService.createFinanceRecordsForApp(resources);
     }
 
     @Override

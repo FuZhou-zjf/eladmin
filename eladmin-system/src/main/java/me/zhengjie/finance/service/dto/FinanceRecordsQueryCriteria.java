@@ -57,4 +57,8 @@ public class FinanceRecordsQueryCriteria{
     @Query(type = Query.Type.BETWEEN, propName = "date")
     private List<Timestamp> date;
 
+
+
+
+
 }

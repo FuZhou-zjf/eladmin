@@ -20,6 +20,7 @@ import me.zhengjie.finance.domain.FinanceRecords;
 import me.zhengjie.finance.service.FinanceRecordsService;
 import me.zhengjie.finance.service.dto.FinanceRecordsQueryCriteria;
 import me.zhengjie.utils.DateQuery;
+import me.zhengjie.utils.SecurityUtils;
 import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ import io.swagger.annotations.*;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import me.zhengjie.utils.PageResult;
 import me.zhengjie.finance.service.dto.FinanceRecordsDto;
@@ -109,6 +111,39 @@ public ResponseEntity<PageResult<FinanceRecordsDto>> queryFinanceRecords(
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+
+    @GetMapping("/{summaryType}-summary")
+    @Log("获取财务汇总")
+    @ApiOperation("获取财务汇总")
+    @PreAuthorize("@el.check('financeRecords:list')")
+    public ResponseEntity<Map<String, Object>> getFinancialSummary(
+            @PathVariable String summaryType, FinanceRecordsQueryCriteria criteria) {
+
+        // 默认使用当前登录用户信息
+        if (criteria.getAccountId() == null) {
+            criteria.setAccountId(SecurityUtils.getCurrentUserId());
+        }
+        if (criteria.getAccountType() == null) {
+            criteria.setAccountType("employee");
+        }
+
+        Map<String, Object> result;
+        switch (summaryType) {
+            case "daily":
+                result = financeRecordsService.getDailySummary(criteria);
+                break;
+            case "weekly":
+                result = financeRecordsService.getWeeklySummary(criteria);
+                break;
+            case "monthly":
+                result = financeRecordsService.getMonthlySummary(criteria);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid summary type: " + summaryType);
+        }
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 
 
 }

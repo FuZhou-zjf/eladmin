@@ -15,6 +15,7 @@
 */
 package me.zhengjie.finance.service;
 
+import me.zhengjie.appinfo.domain.AppInfo;
 import me.zhengjie.finance.domain.FinanceRecords;
 import me.zhengjie.finance.service.dto.FinanceRecordsDto;
 import me.zhengjie.finance.service.dto.FinanceRecordsQueryCriteria;
@@ -94,4 +95,13 @@ public interface FinanceRecordsService {
      */
 
     void updateFinanceRecordsForOrder(Order resources);
+
+
+    void createFinanceRecordsForApp(AppInfo resources);  // 新增方法，用于根据应用生成财务记录
+
+    Map<String, Object> getDailySummary(FinanceRecordsQueryCriteria criteria);
+
+    Map<String, Object> getWeeklySummary(FinanceRecordsQueryCriteria criteria);
+
+    Map<String, Object> getMonthlySummary(FinanceRecordsQueryCriteria criteria);
 }

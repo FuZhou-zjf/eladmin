@@ -104,7 +104,8 @@ public class OrderServiceImpl implements OrderService {
         resources.setOrderSeller(seller);
 
         // 拼接 nickname：name + phone 后四位
-        String nickname = resources.getOrderSellerName() + resources.getOrderContactInfo().substring(resources.getOrderContactInfo().length() - 4);
+        // 使用新的方法生成卖家的昵称
+        String nickname = generateSellerNickname(resources.getOrderSellerName(), resources.getOrderContactInfo());
         resources.setOrderSellerNickname(nickname);
         seller.setNickName(nickname);
         sellerInfoService.save(seller);
@@ -156,12 +157,32 @@ public class OrderServiceImpl implements OrderService {
         appInfo.setSsn(resources.getOrderSellerSsn());
         appInfo.setAccountStatus(resources.getOrderStatus());
         appInfo.setPhoneNumber(resources.getOrderContactInfo());
+        appInfo.setOrderNumber(resources.getOrderNumber());
         // 保存 App 信息
         appInfoService.create(appInfo);
 
         // 返回 accountId
         return appInfo.getAccountId();
     }
+
+    public String generateSellerNickname(String sellerName, String contactInfo) {
+        // 默认的四位数字生成逻辑
+        String phoneLastFour = "";
+
+        // 检查电话号码是否有效，长度至少为4且只包含数字
+        if (contactInfo != null && contactInfo.length() >= 4 && contactInfo.matches("\\d+")) {
+            phoneLastFour = contactInfo.substring(contactInfo.length() - 4);  // 提取电话号码后四位
+        } else {
+            // 如果电话号码无效，则生成随机四位数字
+            Random rand = new Random();
+            int randomNum = rand.nextInt(9000) + 1000;  // 确保生成的数字在1000到9999之间，避免以0开头
+            phoneLastFour = String.valueOf(randomNum);
+        }
+
+        // 拼接卖家昵称，格式：卖家名称 + 电话后四位
+        return sellerName + phoneLastFour;
+    }
+
 
     // 处理推荐人信息（如果提供）
     private SellerInfo handleReferrerInfo(Order resources) {

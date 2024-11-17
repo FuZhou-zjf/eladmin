@@ -16,6 +16,8 @@
 package me.zhengjie.appinfo.service.dto;
 
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.io.Serializable;
 
@@ -31,8 +33,11 @@ public class AppInfoDto implements Serializable {
     /** 账号ID */
     private Long accountId;
 
+    private String orderNumber;
+
     /** App名称 */
     private String appName;
+
 
     /** 账号名 */
     private String accountUsername;
@@ -42,6 +47,8 @@ public class AppInfoDto implements Serializable {
 
     /** 账号状态 */
     private String accountStatus;
+
+    private BigDecimal saleFee;
 
     /** 创建时间 */
     private Timestamp createdAt;

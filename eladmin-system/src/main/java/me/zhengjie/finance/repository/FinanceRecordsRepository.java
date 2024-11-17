@@ -26,4 +26,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 **/
 public interface FinanceRecordsRepository extends JpaRepository<FinanceRecords, Long>, JpaSpecificationExecutor<FinanceRecords> {
     void deleteByOrderId(Long orderId);
+
 }

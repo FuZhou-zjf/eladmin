@@ -24,6 +24,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.io.Serializable;
 
@@ -48,6 +49,11 @@ public class AppInfo implements Serializable {
     @ApiModelProperty(value = "App名称")
     private String appName;
 
+    @Column(name = "`order_number`")
+    @ApiModelProperty(value = "订单编号")
+    private String orderNumber;
+
+
     @Column(name = "`account_username`")
     @ApiModelProperty(value = "账号名")
     private String accountUsername;
@@ -59,6 +65,10 @@ public class AppInfo implements Serializable {
     @Column(name = "`account_status`")
     @ApiModelProperty(value = "账号状态")
     private String accountStatus;
+
+    @Column(name = "`sale_fee`")
+    @ApiModelProperty(value = "收款金额，用来计算账号出售费用")
+    private BigDecimal saleFee;
 
     @CreationTimestamp
     @Column(name = "`created_at`")

@@ -35,11 +35,15 @@ public class FinanceRecordsDto implements Serializable {
     /** 订单ID */
     private Long orderId;
 
+    private String orderNumber;
+
     /** 交易日期 */
     private Timestamp date;
 
     /** 账户ID */
     private Long accountId;
+
+    private String accountName;
 
     /** 账户类型: 员工/卖家/推荐人 */
     private String accountType;
