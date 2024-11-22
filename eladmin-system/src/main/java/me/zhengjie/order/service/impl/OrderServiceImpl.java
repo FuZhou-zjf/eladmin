@@ -218,34 +218,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-    //自定义日期查询范围
-    private Specification<Order> createSpecification(OrderQueryCriteria criteria) {
-        return (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-
-            // 订单号模糊查询
-            if (criteria.getOrderNumber() != null) {
-                predicates.add(cb.like(root.get("orderNumber"), "%" + criteria.getOrderNumber() + "%"));
-            }
-
-            // 添加日期范围查询
-            addDateRangePredicate(predicates, root, cb, criteria.getOrderCreatedAt());
-
-
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-    }
-    private void addDateRangePredicate(List<Predicate> predicates, Root<Order> root,
-                                       CriteriaBuilder cb, List<Timestamp> orderCreatedAt) {
-        if (orderCreatedAt != null && orderCreatedAt.size() == 2) {
-            predicates.add(cb.between(
-                    root.get("orderCreatedAt"),
-                    orderCreatedAt.get(0),
-                    orderCreatedAt.get(1)
-            ));
-        }
-    }
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(Order resources) {

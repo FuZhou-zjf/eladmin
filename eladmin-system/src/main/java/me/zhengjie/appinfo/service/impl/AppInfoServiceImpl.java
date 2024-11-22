@@ -104,24 +104,6 @@ public class AppInfoServiceImpl implements AppInfoService {
         }
     }
 
-    private Specification<AppInfo> createSpecification(AppInfoQueryCriteria criteria) {
-        return (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-
-            // 添加日期范围查询
-            addDateRangePredicate(predicates, root, cb, criteria.getCreatedAt());
-
-            // 其他查询条件...
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-    }
-
-    private void addDateRangePredicate(List<Predicate> predicates, Root<AppInfo> root,
-                                       CriteriaBuilder cb, List<Timestamp> createdAt) {
-        if (createdAt != null && createdAt.size() == 2) {
-            predicates.add(cb.between(root.get("createdAt"), createdAt.get(0), createdAt.get(1)));
-        }
-    }
 
     @Override
     public void download(List<AppInfoDto> all, HttpServletResponse response) throws IOException {

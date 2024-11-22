@@ -30,9 +30,6 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.*;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import me.zhengjie.utils.PageResult;
@@ -66,7 +63,7 @@ public class AppInfoController {
     public ResponseEntity<PageResult<AppInfoDto>> queryAppInfo(
             AppInfoQueryCriteria criteria,
             Pageable pageable,
-            @RequestParam(value = "createTime", required = false) List<String> createTimeStrs) {
+            @RequestParam(value = "createdAt", required = false) List<String> createTimeStrs) {
 
         // 如果前端传递了日期范围，则解析并设置到查询条件对象中
         if (createTimeStrs != null && createTimeStrs.size() == 2) {

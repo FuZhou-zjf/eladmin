@@ -40,10 +40,6 @@ public class AppInfoQueryCriteria{
     @Query
     private String accountStatus;
 
-    /** 日期范围查询 */
-    @Query(type = Query.Type.BETWEEN, propName = "createdAt")
-    private List<Timestamp> createdAt;
-
 
     /** 模糊 */
     @Query(type = Query.Type.INNER_LIKE)
@@ -52,4 +48,19 @@ public class AppInfoQueryCriteria{
     /** 精确 */
     @Query
     private String ssn;
+
+    /** 日期范围查询 */
+    @Query(type = Query.Type.BETWEEN, propName = "createdAt")
+    private List<Timestamp> createdAt;
+
+
+    /** 范围查询，起始日期 */
+    @Query(type = Query.Type.GREATER_THAN, propName = "createdAt")
+    private Timestamp startDate;
+
+    /** 范围查询，结束日期 */
+    @Query(type = Query.Type.LESS_THAN, propName = "createdAt")
+    private Timestamp endDate;
+
+
 }
