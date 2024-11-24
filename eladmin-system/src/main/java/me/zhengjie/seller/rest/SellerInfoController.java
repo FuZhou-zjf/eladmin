@@ -33,6 +33,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import me.zhengjie.utils.PageResult;
 import me.zhengjie.seller.service.dto.SellerInfoDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.List;
 
 /**
 * @website https://eladmin.vip
@@ -41,11 +44,12 @@ import me.zhengjie.seller.service.dto.SellerInfoDto;
 **/
 @RestController
 @RequiredArgsConstructor
-@Api(tags = "卖家测试管理")
-    @RequestMapping("/api/sellerInfo")
+@Api(tags = "卖家管理")
+@RequestMapping("/api/sellerInfo")
 public class SellerInfoController {
 
     private final SellerInfoService sellerInfoService;
+    private static final Logger log = LoggerFactory.getLogger(SellerInfoController.class);
 
     @Log("导出数据")
     @ApiOperation("导出数据")
@@ -89,38 +93,92 @@ public class SellerInfoController {
         sellerInfoService.deleteAll(ids);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-    @GetMapping("/checkSellerExists")
-    @ApiOperation("检查卖家是否存在")
-    public ResponseEntity<Map<String, Object>> checkSellerExists(
+    @GetMapping("/checkSeller")
+    @ApiOperation("检查卖家信息")
+    public ResponseEntity<Map<String, Object>> checkSeller(
             @RequestParam String name,
-            @RequestParam String ssn) {
-
-        boolean nameExists = sellerInfoService.checkNameExists(name);
-        boolean ssnExists = sellerInfoService.checkSsnExists(ssn);
-        boolean sellerExists = sellerInfoService.checkSellerExists(name, ssn);
-
+            @RequestParam(required = false) String ssn,
+            @RequestParam(required = false) String contactInfo) {
+        
         Map<String, Object> response = new HashMap<>();
-        response.put("nameExists", nameExists);
-        response.put("ssnExists", ssnExists);
-        response.put("sellerExists", sellerExists);
+        
+        try {
+            // 根据名称和SSN检查卖家是否存在
+            boolean exists = (ssn != null && !ssn.isEmpty()) 
+                ? sellerInfoService.checkSellerExists(name, ssn)
+                : sellerInfoService.checkNameExists(name);
 
-        return ResponseEntity.ok(response);
+            response.put("exists", exists);
+            
+            if (exists) {
+                // 使用查询条件获取卖家信息
+                SellerInfoQueryCriteria criteria = new SellerInfoQueryCriteria();
+                criteria.setName(name);
+                if (ssn != null && !ssn.isEmpty()) {
+                    criteria.setSsn(ssn);
+                }
+                
+                List<SellerInfoDto> sellers = sellerInfoService.queryAll(criteria);
+                if (!sellers.isEmpty()) {
+                    SellerInfoDto seller = sellers.get(0);
+                    response.put("contactInfo", seller.getContactInfo());
+                    response.put("paymentMethod", seller.getPaymentMethod());
+                    response.put("email", seller.getEmail());
+                    response.put("phoneNumber", seller.getPhoneNumber());
+                    response.put("remarks", seller.getRemarks());
+                }
+            }
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("检查卖家信息时发生错误", e);
+            response.put("error", "检查卖家信息时发生错误");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
-    @GetMapping("/checkRecommenderExists")
-    public ResponseEntity<Map<String, Object>> checkRecommenderExists(
+
+    @GetMapping("/checkReferrer")
+    @ApiOperation("检查推荐人信息")
+    public ResponseEntity<Map<String, Object>> checkReferrer(
             @RequestParam String name,
-            @RequestParam String contactInfo) {
-
-        boolean nameExists = sellerInfoService.existsByName(name);
-        boolean contactExists = sellerInfoService.existsByContactInfo(contactInfo);
-        boolean recommenderExists = sellerInfoService.existsByNameAndContactInfo(name, contactInfo);
-
+            @RequestParam(required = false) String contactInfo) {
+        
         Map<String, Object> response = new HashMap<>();
-        response.put("nameExists", nameExists);
-        response.put("contactExists", contactExists);
-        response.put("recommenderExists", recommenderExists);
+        
+        try {
+            // 检查推荐人是否存在
+            boolean exists = (contactInfo != null && !contactInfo.isEmpty())
+                ? sellerInfoService.existsByNameAndContactInfo(name, contactInfo)
+                : sellerInfoService.existsByName(name);
 
-        return ResponseEntity.ok(response);
+            response.put("exists", exists);
+            
+            if (exists) {
+                // 使用查询条件获取推荐人信息
+                SellerInfoQueryCriteria criteria = new SellerInfoQueryCriteria();
+                criteria.setName(name);
+                if (contactInfo != null && !contactInfo.isEmpty()) {
+                    criteria.setContactInfo(contactInfo);
+                }
+                
+                List<SellerInfoDto> referrers = sellerInfoService.queryAll(criteria);
+                if (!referrers.isEmpty()) {
+                    SellerInfoDto referrer = referrers.get(0);
+                    response.put("contactInfo", referrer.getContactInfo());
+                    response.put("paymentMethod", referrer.getPaymentMethod());
+                    response.put("email", referrer.getEmail());
+                    response.put("phoneNumber", referrer.getPhoneNumber());
+                    response.put("remarks", referrer.getRemarks());
+                }
+            }
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("检查推荐人信息时发生错误", e);
+            response.put("error", "检查推荐人信息时发生错误");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
-
 }

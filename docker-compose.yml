@@ -29,12 +29,12 @@ services:
 
   app:
     build:
-      context: K:/eladmin
+      context: /Users/zj008/Documents/eladmin
       dockerfile: Dockerfile
     container_name: eladmin
     volumes:
-      - K:/eladmin:/home/eladmin
-#      - ~/.m2:/root/.m2
+      - /Users/zj008/Documents/eladmin:/home/eladmin
+    #      - ~/.m2:/root/.m2
     ports:
       - "8080:8000"
     environment:
@@ -52,8 +52,8 @@ services:
     image: node:14
     container_name: eladmin-node
     volumes:
-      - K:/eladmin-web:/home/eladmin-web
-      - /home/eladmin-web/node_modules:/home/eladmin-web/node_modules
+      - /Users/zj008/Documents/eladmin-web:/home/eladmin-web
+      - /Users/zj008/Documents/eladmin-web/node_modules:/home/eladmin-web/node_modules
     working_dir: /home/eladmin-web
     command: sh -c "npm install && npm run build:prod"
     restart: on-failure
@@ -68,11 +68,11 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - K:/eladmin/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - K:/eladmin/nginx/conf.d/eladmin.conf:/etc/nginx/conf.d/eladmin.conf:ro
-      - K:/eladmin/nginx/logs:/var/log/nginx
-      - K:/eladmin/nginx/cert:/etc/nginx/cert
-      - K:/eladmin/nginx/dist:/usr/share/nginx/html/eladmin/dist:ro
+      - /Users/zj008/Documents/eladmin/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /Users/zj008/Documents/eladmin/nginx/conf.d/eladmin.conf:/etc/nginx/conf.d/eladmin.conf:ro
+      - /Users/zj008/Documents/eladmin/nginx/logs:/var/log/nginx
+      - /Users/zj008/Documents/eladmin/nginx/cert:/etc/nginx/cert
+      - /Users/zj008/Documents/eladmin/nginx/dist:/usr/share/nginx/html/eladmin/dist:ro
     environment:
       - TZ=Asia/Shanghai
     depends_on:

@@ -116,6 +116,10 @@ public class AppInfo implements Serializable {
     @ApiModelProperty(value = "联系电话")
     private String phoneNumber;
 
+    @Column(name = "`api_url`")
+    @ApiModelProperty(value = "API接口地址")
+    private String apiUrl;
+
     @Column(name = "`email`")
     @ApiModelProperty(value = "电子邮件")
     private String email;
@@ -139,6 +143,10 @@ public class AppInfo implements Serializable {
     @Column(name = "`security_answer`")
     @ApiModelProperty(value = "答案")
     private String securityAnswer;
+
+    @Column(name = "buyer_name")
+    @ApiModelProperty(value = "已售客户")
+    private String buyerName;
 
     @Column(name = "`remark`")
     @ApiModelProperty(value = "备注")

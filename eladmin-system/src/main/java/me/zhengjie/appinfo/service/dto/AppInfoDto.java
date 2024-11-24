@@ -83,6 +83,8 @@ public class AppInfoDto implements Serializable {
     /** 联系电话 */
     private String phoneNumber;
 
+    private String apiUrl;
+
     /** 电子邮件 */
     private String email;
 
@@ -100,6 +102,9 @@ public class AppInfoDto implements Serializable {
 
     /** 答案 */
     private String securityAnswer;
+
+    /** 已售客户 */
+    private String buyerName;
 
     /** 备注 */
     private String remark;

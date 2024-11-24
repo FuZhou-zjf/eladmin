@@ -41,6 +41,8 @@ import org.springframework.data.domain.Pageable;
 import me.zhengjie.utils.PageUtil;
 import me.zhengjie.utils.QueryHelp;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.io.IOException;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -93,6 +95,12 @@ public class OrderServiceImpl implements OrderService {
 
         // 1. 校验订单号是否重复
         validateOrderNumber(resources.getOrderNumber());
+
+        // 生成订单号
+        if (resources.getOrderNumber() == null || resources.getOrderNumber().isEmpty()) {
+            String orderNumber = generateOrderNumber();  // 添加这个方法
+            resources.setOrderNumber(orderNumber);
+        }
 
         // 2. 处理卖家信息
         SellerInfo seller = handleSellerInfo(
@@ -153,10 +161,10 @@ public class OrderServiceImpl implements OrderService {
         appInfo.setAccountUsername(resources.getOrderAccountUsername());
         appInfo.setAccountPassword(resources.getOrderAccountPassword());
         appInfo.setAppName(resources.getOrderAppName());
-        appInfo.setFullName(resources.getOrderSellerName());
+        appInfo.setFullName(resources.getOrderSellerNickname());
         appInfo.setSsn(resources.getOrderSellerSsn());
         appInfo.setAccountStatus(resources.getOrderStatus());
-        appInfo.setPhoneNumber(resources.getOrderContactInfo());
+//        appInfo.setPhoneNumber(resources.getOrderContactInfo());
         appInfo.setOrderNumber(resources.getOrderNumber());
         // 保存 App 信息
         appInfoService.create(appInfo);
@@ -180,7 +188,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 拼接卖家昵称，格式：卖家名称 + 电话后四位
-        return sellerName + phoneLastFour;
+        return sellerName + " (" + phoneLastFour + ")";
     }
 
 
@@ -257,6 +265,15 @@ public class OrderServiceImpl implements OrderService {
         boolean isReferrerChanged = !Objects.equals(oldOrder.getOrderReferrer(), newOrder.getOrderReferrer());
 
         return isAmountChanged || isCommissionChanged || isReferralFeeChanged || isDateChanged || isRemarkChanged || isReferrerChanged;
+    }
+
+    // 生成订单号的方法
+    private String generateOrderNumber() {
+        // 格式：年月日时分秒 + 3位随机数
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String timestamp = LocalDateTime.now().format(formatter);
+        String random = String.format("%03d", new Random().nextInt(1000));
+        return timestamp + random;
     }
 
     @Override

@@ -25,27 +25,21 @@ import me.zhengjie.appinfo.service.AppInfoService;
 import me.zhengjie.appinfo.service.dto.AppInfoDto;
 import me.zhengjie.appinfo.service.dto.AppInfoQueryCriteria;
 import me.zhengjie.appinfo.service.mapstruct.AppInfoMapper;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import me.zhengjie.utils.PageUtil;
 import me.zhengjie.utils.QueryHelp;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.io.IOException;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import javax.persistence.criteria.Predicate;
 import me.zhengjie.utils.PageResult;
-import me.zhengjie.utils.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
 * @website https://eladmin.vip
@@ -60,6 +54,8 @@ public class AppInfoServiceImpl implements AppInfoService {
     private final AppInfoRepository appInfoRepository;
     private final AppInfoMapper appInfoMapper;
     private final FinanceRecordsService financeRecordsService;
+    private static final Logger log = LoggerFactory.getLogger(AppInfoServiceImpl.class);
+
 
     @Override
     public PageResult<AppInfoDto> queryAll(AppInfoQueryCriteria criteria, Pageable pageable){
@@ -92,8 +88,21 @@ public class AppInfoServiceImpl implements AppInfoService {
     public void update(AppInfo resources) {
         AppInfo appInfo = appInfoRepository.findById(resources.getAccountId()).orElseGet(AppInfo::new);
         ValidationUtil.isNull( appInfo.getAccountId(),"AppInfo","id",resources.getAccountId());
+        // 使用日志记录传入的 resources 中的 apiUrl 值
+        log.info("传入的 apiUrl 值: {}", resources.getApiUrl());
+
+        // 更新记录
         appInfo.copy(resources);
-        appInfoRepository.save(appInfo);
+
+        // 使用日志记录更新后的 appInfo 对象的 apiUrl 值
+        log.info("更新后的 appInfo.apiUrl 值: {}", appInfo.getApiUrl());
+
+        // 保存到数据库
+        AppInfo savedAppInfo = appInfoRepository.save(appInfo);
+
+        // 保存后再次打印保存结果
+        log.info("保存后的 apiUrl 值: {}", savedAppInfo.getApiUrl());
+
         financeRecordsService.createFinanceRecordsForApp(resources);
     }
 
