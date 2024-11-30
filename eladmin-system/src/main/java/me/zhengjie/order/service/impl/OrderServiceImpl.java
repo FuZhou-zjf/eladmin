@@ -17,12 +17,13 @@ package me.zhengjie.order.service.impl;
 
 import me.zhengjie.appinfo.domain.AppInfo;
 import me.zhengjie.appinfo.service.AppInfoService;
-import me.zhengjie.finance.repository.FinanceRecordsRepository;
+import me.zhengjie.appinfo.service.dto.AppInfoDto;
 import me.zhengjie.finance.service.FinanceRecordsService;
 import me.zhengjie.order.domain.Order;
 import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.seller.domain.SellerInfo;
 import me.zhengjie.seller.service.SellerInfoService;
+import me.zhengjie.seller.service.dto.SellerInfoDto;
 import me.zhengjie.utils.ValidationUtil;
 import me.zhengjie.utils.FileUtil;
 import lombok.RequiredArgsConstructor;
@@ -33,23 +34,18 @@ import me.zhengjie.order.service.dto.OrderQueryCriteria;
 import me.zhengjie.order.service.mapstruct.OrderMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import me.zhengjie.utils.PageUtil;
 import me.zhengjie.utils.QueryHelp;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.io.IOException;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletResponse;
 import me.zhengjie.utils.PageResult;
-import javax.persistence.criteria.Predicate;               // 查询条件的谓词
 /**
 * @website https://eladmin.vip
 * @description 服务实现
@@ -229,42 +225,138 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(Order resources) {
-        Order order = orderRepository.findById(resources.getOrderId()).orElseGet(Order::new);
-        ValidationUtil.isNull(order.getOrderId(), "Order", "orderId", resources.getOrderId());
+        try {
+            // 1. 获取原订单信息
+            Order oldOrder = orderRepository.findById(resources.getOrderId())
+                .orElseThrow(() -> new RuntimeException("订单不存在"));
 
-        // 检查订单号是否重复
-        Order existingOrder = orderRepository.findByOrderNumber(resources.getOrderNumber());
-        if (existingOrder != null && !existingOrder.getOrderId().equals(order.getOrderId())) {
-            throw new EntityExistException(Order.class, "order_number", resources.getOrderNumber());
-        }
+            // 2. 验证订单号唯一性
+            if (!Objects.equals(oldOrder.getOrderNumber(), resources.getOrderNumber())) {
+                Order existingOrder = orderRepository.findByOrderNumber(resources.getOrderNumber());
+                if (existingOrder != null && !existingOrder.getOrderId().equals(oldOrder.getOrderId())) {
+                    throw new EntityExistException(Order.class, "order_number", resources.getOrderNumber());
+                }
+            }
 
-        // **处理推荐人信息**
-        SellerInfo referrer = handleReferrerInfo(resources);
-        resources.setOrderReferrer(referrer);
+            // 3. 打印更新前的值，用于调试
+            logger.info("更新前的订单信息 - 订单号: {}, 卖家名称: {}, 联系方式: {}, 昵称: {}", 
+                oldOrder.getOrderNumber(),
+                oldOrder.getOrderSellerName(), 
+                oldOrder.getOrderContactInfo(),
+                oldOrder.getOrderSellerNickname());
+            logger.info("新的订单信息 - 订单号: {}, 卖家名称: {}, 联系方式: {}, 昵称: {}", 
+                resources.getOrderNumber(),
+                resources.getOrderSellerName(), 
+                resources.getOrderContactInfo(),
+                resources.getOrderSellerNickname());
 
-        // 检查财务相关数据是否发生变化
-        boolean isFinancialDataChanged = isFinancialDataChanged(order, resources);
+            // 4. 如果卖家姓名或联系方式变更，必须重新生成昵称
+            if (!Objects.equals(oldOrder.getOrderSellerName(), resources.getOrderSellerName()) 
+                || !Objects.equals(oldOrder.getOrderContactInfo(), resources.getOrderContactInfo())) {
+                
+                String newNickname = generateSellerNickname(
+                    resources.getOrderSellerName(), 
+                    resources.getOrderContactInfo()
+                );
+                logger.info("卖家信息变更，重新生成昵称: {} -> {}", oldOrder.getOrderSellerNickname(), newNickname);
+                resources.setOrderSellerNickname(newNickname);
+            }
 
-        // 复制属性并保存订单
-        order.copy(resources);
-        orderRepository.save(order);
+            // 5. 更新订单信息
+            oldOrder.copy(resources);
+            Order savedOrder = orderRepository.save(oldOrder);
+            logger.info("订单基本信息更新成功 - 订单号: {}, 更新后昵称: {}", 
+                savedOrder.getOrderNumber(), savedOrder.getOrderSellerNickname());
 
-        // 如果财务数据发生了变化，更新财务记录
-        if (isFinancialDataChanged) {
-            financeRecordsService.updateFinanceRecordsForOrder(order);
+            // 6. 同步更新卖家信息
+            Long sellerId = oldOrder.getOrderSeller() != null ? oldOrder.getOrderSeller().getSellerId() : null;
+            logger.info("开始检查卖家信息变更 - 卖家ID: {}", sellerId);
+            
+            if (sellerId != null) {
+                try {
+                    SellerInfoDto sellerInfoDto = sellerInfoService.findById(sellerId);
+                    if (sellerInfoDto != null) {
+                        SellerInfo seller = new SellerInfo();
+                        seller.setSellerId(sellerInfoDto.getSellerId());
+                        seller.setName(resources.getOrderSellerName());
+                        seller.setContactInfo(resources.getOrderContactInfo());
+                        seller.setSsn(resources.getOrderSellerSsn());
+                        seller.setPaymentMethod(resources.getOrderPaymentMethod());
+                        seller.setNickName(resources.getOrderSellerNickname());
+                        
+                        sellerInfoService.update(seller);
+                        logger.info("同步更新卖家信息成功 - 卖家ID: {}, 新昵称: {}", seller.getSellerId(), seller.getNickName());
+                    }
+                } catch (Exception e) {
+                    logger.error("更新卖家信息失败: {}", e.getMessage());
+                }
+            }
+
+            // 7. 同步更新App信息
+            Long appId = oldOrder.getOrderAppId();
+            logger.info("开始检查App信息变更 - AppID: {}", appId);
+            
+            if (appId != null) {
+                try {
+                    AppInfoDto oldAppInfo = appInfoService.findById(appId);
+                    if (oldAppInfo != null) {
+                        AppInfo appInfo = new AppInfo();
+                        appInfo.setAccountId(appId);
+                        // 保留原有的账号密码
+                        appInfo.setAccountUsername(oldAppInfo.getAccountUsername());
+                        appInfo.setAccountPassword(oldAppInfo.getAccountPassword());
+                        // 更新变化的字段
+                        appInfo.setAppName(resources.getOrderAppName());
+                        appInfo.setFullName(resources.getOrderSellerNickname());
+                        appInfo.setSsn(resources.getOrderSellerSsn());
+                        appInfo.setAccountStatus(resources.getOrderStatus());
+                        appInfo.setOrderNumber(resources.getOrderNumber());
+                        appInfoService.update(appInfo);
+                        logger.info("同步更新App信息成功 - AppID: {}", appInfo.getAccountId());
+                    } else {
+                        logger.warn("未找到对应的App信息 - AppID: {}", appId);
+                    }
+                } catch (Exception e) {
+                    logger.error("更新App信息失败: {}", e.getMessage());
+                }
+            }
+
+            // 8. 检查并更新财务记录
+            if (isFinancialDataChanged(oldOrder, resources)) {
+                financeRecordsService.updateFinanceRecordsForOrder(oldOrder);
+                logger.info("同步更新财务记录成功 - 订单号: {}", oldOrder.getOrderNumber());
+            }
+
+        } catch (Exception e) {
+            logger.error("更新订单失败: {}", e.getMessage(), e);
+            throw new RuntimeException("更新订单失败: " + e.getMessage());
         }
     }
 
-    // 检查财务相关数据是否发生变化
-    private boolean isFinancialDataChanged(Order oldOrder, Order newOrder) {
-        boolean isAmountChanged = !Objects.equals(oldOrder.getOrderAmount(), newOrder.getOrderAmount());
-        boolean isCommissionChanged = !Objects.equals(oldOrder.getOrderCommission(), newOrder.getOrderCommission());
-        boolean isReferralFeeChanged = !Objects.equals(oldOrder.getOrderReferralFee(), newOrder.getOrderReferralFee());
-        boolean isDateChanged = !Objects.equals(oldOrder.getOrderCreatedAt(), newOrder.getOrderCreatedAt());
-        boolean isRemarkChanged = !Objects.equals(oldOrder.getOrderRemark(), newOrder.getOrderRemark());
-        boolean isReferrerChanged = !Objects.equals(oldOrder.getOrderReferrer(), newOrder.getOrderReferrer());
+    // 检查卖家信息是否变更
+    private boolean isSellerInfoChanged(Order oldOrder, Order newOrder) {
+        return !Objects.equals(oldOrder.getOrderSellerName(), newOrder.getOrderSellerName())
+                || !Objects.equals(oldOrder.getOrderContactInfo(), newOrder.getOrderContactInfo())
+                || !Objects.equals(oldOrder.getOrderSellerSsn(), newOrder.getOrderSellerSsn())
+                || !Objects.equals(oldOrder.getOrderPaymentMethod(), newOrder.getOrderPaymentMethod());
+    }
 
-        return isAmountChanged || isCommissionChanged || isReferralFeeChanged || isDateChanged || isRemarkChanged || isReferrerChanged;
+    // 检查App信息是否变更
+    private boolean isAppInfoChanged(Order oldOrder, Order newOrder) {
+        return !Objects.equals(oldOrder.getOrderAppName(), newOrder.getOrderAppName())
+                || !Objects.equals(oldOrder.getOrderStatus(), newOrder.getOrderStatus())
+                || !Objects.equals(oldOrder.getOrderSellerSsn(), newOrder.getOrderSellerSsn())
+                || !Objects.equals(oldOrder.getOrderNumber(), newOrder.getOrderNumber());
+    }
+
+    // 检查财务相关数据是否变更
+    private boolean isFinancialDataChanged(Order oldOrder, Order newOrder) {
+        return !Objects.equals(oldOrder.getOrderAmount(), newOrder.getOrderAmount())
+                || !Objects.equals(oldOrder.getOrderCommission(), newOrder.getOrderCommission())
+                || !Objects.equals(oldOrder.getOrderReferralFee(), newOrder.getOrderReferralFee())
+                || !Objects.equals(oldOrder.getOrderCreatedAt(), newOrder.getOrderCreatedAt())
+                || !Objects.equals(oldOrder.getOrderRemark(), newOrder.getOrderRemark())
+                || !Objects.equals(oldOrder.getOrderReferrer(), newOrder.getOrderReferrer());
     }
 
     // 生成订单号的方法
@@ -312,11 +404,10 @@ public class OrderServiceImpl implements OrderService {
             map.put("佣金", order.getOrderCommission());
             map.put("创建时间", order.getOrderCreatedAt());
             map.put("更新时间", order.getOrderUpdatedAt());
-            map.put("备注", order.getOrderRemark());
+            map.put("备", order.getOrderRemark());
             list.add(map);
         }
         FileUtil.downloadExcel(list, response);
     }
-
 
 }

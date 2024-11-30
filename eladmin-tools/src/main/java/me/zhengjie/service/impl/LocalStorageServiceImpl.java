@@ -89,6 +89,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
                     type,
                     FileUtil.getSize(multipartFile.getSize())
             );
+            localStorage.setRealName(multipartFile.getOriginalFilename());
             return localStorageRepository.save(localStorage);
         }catch (Exception e){
             FileUtil.del(file);

@@ -35,6 +35,10 @@ public class SellerInfoQueryCriteria{
     @Query(type = Query.Type.INNER_LIKE)
     private String name;
 
+    /** 模糊 */
+    @Query(type = Query.Type.INNER_LIKE)
+    private String nickName;
+
     /** 精确 */
     @Query
     private String contactInfo;

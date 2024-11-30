@@ -134,16 +134,11 @@ public class SellerInfoServiceImpl implements SellerInfoService {
     public boolean checkSellerExists(String name, String ssn) {
         return sellerInfoRepository.existsByNameAndSsn(name, ssn);
     }
+
     @Override
     public boolean checkNameExists(String name) {
         return sellerInfoRepository.existsByName(name);
     }
-
-    @Override
-    public boolean checkSsnExists(String ssn) {
-        return sellerInfoRepository.existsBySsn(ssn);
-    }
-
 
 
 
@@ -153,14 +148,10 @@ public class SellerInfoServiceImpl implements SellerInfoService {
         return sellerInfoRepository.existsByName(name);
     }
 
+
     @Override
     public boolean existsByNameAndContactInfo(String name, String contactInfo) {
         return sellerInfoRepository.existsByNameAndContactInfo(name, contactInfo);
-    }
-
-    @Override
-    public boolean existsByContactInfo(String contactInfo) {
-        return sellerInfoRepository.existsByContactInfo(contactInfo);
     }
 
     // 查询或创建卖家信息
@@ -210,6 +201,13 @@ public class SellerInfoServiceImpl implements SellerInfoService {
         return sellerInfoRepository.save(sellerInfo);
     }
 
-
+    @Override
+    public boolean existsByContactInfo(String contactInfo) {
+        return sellerInfoRepository.existsByContactInfo(contactInfo);
+    }
+    @Override
+    public boolean checkSsnExists(String ssn) {
+        return sellerInfoRepository.existsBySsn(ssn);
+    }
 
 }

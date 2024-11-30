@@ -27,10 +27,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface SellerInfoRepository extends JpaRepository<SellerInfo, Long>, JpaSpecificationExecutor<SellerInfo> {
     boolean existsByNameAndSsn(String name, String ssn);
     boolean existsByName(String name);
+    boolean existsByContactInfo(String contactInfo);
     boolean existsBySsn(String ssn);
-
-
     boolean existsByNameAndContactInfo(String name, String contactInfo);
 
-    boolean existsByContactInfo(String contactInfo);
 }

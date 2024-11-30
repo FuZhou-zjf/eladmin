@@ -39,6 +39,10 @@ public class SellerInfoDto implements Serializable {
     /** 卖家姓名 */
     private String name;
 
+    /** 卖家昵称 */
+    private String nickName;
+
+
     /** 联系方式 */
     private String contactInfo;
 

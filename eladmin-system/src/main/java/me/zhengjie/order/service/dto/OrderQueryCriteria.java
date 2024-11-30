@@ -35,11 +35,12 @@ public class OrderQueryCriteria{
 
     /** 精确 */
     @Query
-    private String orderAccountUsername;
+    private String orderAppName;
 
     /** 模糊 */
     @Query(type = Query.Type.INNER_LIKE)
-    private String orderSellerName;
+    private String orderSellerNickname;
+
 
     /** 精确 */
     @Query
