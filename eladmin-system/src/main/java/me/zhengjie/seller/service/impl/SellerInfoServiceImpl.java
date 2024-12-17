@@ -42,7 +42,8 @@ import java.util.LinkedHashMap;
 import me.zhengjie.utils.PageResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.util.Objects;
+import me.zhengjie.utils.NicknameUtil;
 
 /**
 * @website https://eladmin.vip
@@ -81,6 +82,9 @@ public class SellerInfoServiceImpl implements SellerInfoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void create(SellerInfo resources) {
+        String nickname = NicknameUtil.generateNickname(resources.getName(), resources.getContactInfo());
+        resources.setNickName(nickname);
+        
         Snowflake snowflake = IdUtil.createSnowflake(1, 1);
         resources.setSellerId(snowflake.nextId()); 
         sellerInfoRepository.save(resources);
@@ -90,7 +94,14 @@ public class SellerInfoServiceImpl implements SellerInfoService {
     @Transactional(rollbackFor = Exception.class)
     public void update(SellerInfo resources) {
         SellerInfo sellerInfo = sellerInfoRepository.findById(resources.getSellerId()).orElseGet(SellerInfo::new);
-        ValidationUtil.isNull( sellerInfo.getSellerId(),"SellerInfo","id",resources.getSellerId());
+        ValidationUtil.isNull(sellerInfo.getSellerId(),"SellerInfo","id",resources.getSellerId());
+        
+        if (!Objects.equals(sellerInfo.getName(), resources.getName()) || 
+            !Objects.equals(sellerInfo.getContactInfo(), resources.getContactInfo())) {
+            String newNickname = NicknameUtil.generateNickname(resources.getName(), resources.getContactInfo());
+            resources.setNickName(newNickname);
+        }
+        
         sellerInfo.copy(resources);
         sellerInfoRepository.save(sellerInfo);
     }
@@ -168,6 +179,7 @@ public class SellerInfoServiceImpl implements SellerInfoService {
         if (ssn == null || ssn.trim().isEmpty()) {
             ssn = "N/A";
         }
+        
         // 使用 Criteria 查询卖家信息
         SellerInfoQueryCriteria criteria = new SellerInfoQueryCriteria();
         criteria.setName(name);
@@ -179,16 +191,20 @@ public class SellerInfoServiceImpl implements SellerInfoService {
 
         // 如果存在，返回第一个匹配的卖家
         if (!sellers.isEmpty()) {
-
             return sellers.get(0);
-
         }
 
+        // 创建新卖家
         SellerInfo newSeller = new SellerInfo();
         newSeller.setName(name);
         newSeller.setSsn(ssn);
         newSeller.setContactInfo(contactInfo);
         newSeller.setPaymentMethod(orderPaymentMethod);
+        
+        // 生成昵称
+        String nickname = NicknameUtil.generateNickname(name, contactInfo);
+        newSeller.setNickName(nickname);
+        
         logger.info("保存卖家信息: {}", newSeller.getPaymentMethod());
         return sellerInfoRepository.save(newSeller);
     }

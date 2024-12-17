@@ -37,8 +37,16 @@
     import java.math.BigDecimal;
     import java.sql.Timestamp;
     import java.time.LocalDate;
+    import java.time.LocalDateTime;
+    import java.time.LocalTime;
     import java.time.temporal.WeekFields;
-    import java.util.*;
+    import java.util.ArrayList;
+    import java.util.HashMap;
+    import java.util.LinkedHashMap;
+    import java.util.List;
+    import java.util.Map;
+    import java.util.Set;
+    import java.util.TreeSet;
     import java.io.IOException;
     import javax.servlet.http.HttpServletResponse;
 
@@ -136,14 +144,13 @@
                         resources.getOrderId(),
                         resources.getOrderEmployeeId(),
                         "employee",
-                        employeeName,  // 从订单获取员工名称
+                        employeeName,
                         "amount",
                         "income",
                         resources.getOrderAmount(),
                         resources.getOrderCreatedAt(),
                         resources.getOrderRemark(),
-                        resources.getOrderNumber() // 从订单获取订单编号
-
+                        resources.getOrderNumber()
                 );
                 //跟踪记录
                 createFinanceRecord(
@@ -176,7 +183,7 @@
                             "expense",
                             resources.getOrderCommission(),
                             resources.getOrderCreatedAt(),
-                            resources.getOrderRemark(),
+                            "",
                             resources.getOrderNumber()  // 从订单获取订单编号
                     );
                     createFinanceRecord(
@@ -213,7 +220,7 @@
                             "expense",
                             resources.getOrderReferralFee(),
                             resources.getOrderCreatedAt(),
-                            resources.getOrderRemark(),
+                            "",
                             resources.getOrderNumber()  // 从订单获取订单编号
                     );
                     createFinanceRecord(
@@ -244,10 +251,10 @@
             if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
                 FinanceRecords record = new FinanceRecords();
                 record.setOrderId(orderId);
-                record.setOrderNumber(orderNumber);  // 新增订单编号
+                record.setOrderNumber(orderNumber);
                 record.setAccountId(accountId);
                 record.setAccountType(accountType);
-                record.setAccountName(accountName);  // 新增账号名称
+                record.setAccountName(accountName);
                 record.setCategory(category);
                 record.setType(type);
                 record.setAmount(amount);
@@ -297,6 +304,15 @@
 
         @Override
         public Map<String, Object> getDailySummary(FinanceRecordsQueryCriteria criteria) {
+            if (criteria == null) {
+                criteria = new FinanceRecordsQueryCriteria();
+            }
+            
+            // 设置当天的时间范围
+            LocalDateTime now = LocalDateTime.now();
+            criteria.setStartDate(Timestamp.valueOf(now.with(LocalTime.MIN)));
+            criteria.setEndDate(Timestamp.valueOf(now.with(LocalTime.MAX)));
+            
             return getSummaryByDimension(criteria, "daily");
         }
 
@@ -448,8 +464,10 @@
 
             switch (dimension) {
                 case "daily":
-                    // 格式：YYYY-MM-DD
-                    return localDate.toString();
+                    // 修改为与数据库格式匹配的格式：MM月dd日
+                    return String.format("%d月%d日", 
+                        localDate.getMonthValue(), 
+                        localDate.getDayOfMonth());
                 case "weekly": {
                     // 使用 ISO 标准，计算周一为一周开始
                     LocalDate startOfWeek = localDate.with(WeekFields.ISO.getFirstDayOfWeek());

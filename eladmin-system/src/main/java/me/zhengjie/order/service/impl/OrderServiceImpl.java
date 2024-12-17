@@ -46,6 +46,9 @@ import java.util.*;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 import me.zhengjie.utils.PageResult;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import me.zhengjie.utils.NicknameUtil;
 /**
 * @website https://eladmin.vip
 * @description 服务实现
@@ -62,6 +65,7 @@ public class OrderServiceImpl implements OrderService {
     private final AppInfoService appInfoService;
     private final FinanceRecordsService financeRecordsService;
     private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
+    private static final BigDecimal HUNDRED = new BigDecimal("100");
 
 
     @Override
@@ -109,7 +113,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 拼接 nickname：name + phone 后四位
         // 使用新的方法生成卖家的昵称
-        String nickname = generateSellerNickname(resources.getOrderSellerName(), resources.getOrderContactInfo());
+        String nickname = NicknameUtil.generateNickname(resources.getOrderSellerName(), resources.getOrderContactInfo());
         resources.setOrderSellerNickname(nickname);
         seller.setNickName(nickname);
         sellerInfoService.save(seller);
@@ -160,7 +164,6 @@ public class OrderServiceImpl implements OrderService {
         appInfo.setFullName(resources.getOrderSellerNickname());
         appInfo.setSsn(resources.getOrderSellerSsn());
         appInfo.setAccountStatus(resources.getOrderStatus());
-//        appInfo.setPhoneNumber(resources.getOrderContactInfo());
         appInfo.setOrderNumber(resources.getOrderNumber());
         // 保存 App 信息
         appInfoService.create(appInfo);
@@ -168,25 +171,6 @@ public class OrderServiceImpl implements OrderService {
         // 返回 accountId
         return appInfo.getAccountId();
     }
-
-    public String generateSellerNickname(String sellerName, String contactInfo) {
-        // 默认的四位数字生成逻辑
-        String phoneLastFour = "";
-
-        // 检查电话号码是否有效，长度至少为4且只包含数字
-        if (contactInfo != null && contactInfo.length() >= 4 && contactInfo.matches("\\d+")) {
-            phoneLastFour = contactInfo.substring(contactInfo.length() - 4);  // 提取电话号码后四位
-        } else {
-            // 如果电话号码无效，则生成随机四位数字
-            Random rand = new Random();
-            int randomNum = rand.nextInt(9000) + 1000;  // 确保生成的数字在1000到9999之间，避免以0开头
-            phoneLastFour = String.valueOf(randomNum);
-        }
-
-        // 拼接卖家昵称，格式：卖家名称 + 电话后四位
-        return sellerName + " (" + phoneLastFour + ")";
-    }
-
 
     // 处理推荐人信息（如果提供）
     private SellerInfo handleReferrerInfo(Order resources) {
@@ -199,11 +183,14 @@ public class OrderServiceImpl implements OrderService {
                     ensurePaymentMethod(resources.getOrderReferrerMethod(), false)
             );
 
-            // 拼接推荐人昵称：name + phone 后四位
-            String referrerNickname = resources.getOrderReferrerName() + resources.getOrderReferrerInfo().substring(resources.getOrderReferrerInfo().length() - 4);
+            // 使用相同的昵称生成方法
+            String referrerNickname = NicknameUtil.generateNickname(
+                resources.getOrderReferrerName(), 
+                resources.getOrderReferrerInfo()
+            );
             resources.setOrderReferrerNickname(referrerNickname);
-            referrer.setNickName(referrerNickname);  // 保存推荐人昵称
-            sellerInfoService.save(referrer);  // 保存推荐人的信息
+            referrer.setNickName(referrerNickname);
+            sellerInfoService.save(referrer);
 
             return referrer;
         }
@@ -230,6 +217,19 @@ public class OrderServiceImpl implements OrderService {
             Order oldOrder = orderRepository.findById(resources.getOrderId())
                 .orElseThrow(() -> new RuntimeException("订单不存在"));
 
+          
+
+            // [修改] 处理订单金额
+            if (resources.getOrderAmount() != null) {
+                // 如果是抽成比例（带小数点）
+                if (resources.getOrderAmount().compareTo(BigDecimal.ONE) < 0 && 
+                    resources.getOrderAmount().compareTo(BigDecimal.ZERO) > 0) {
+                    calculatePercentageAmount(resources);
+                }
+                // 如果是固定金额，直接更新财务记录
+                financeRecordsService.updateFinanceRecordsForOrder(resources);
+            }
+
             // 2. 验证订单号唯一性
             if (!Objects.equals(oldOrder.getOrderNumber(), resources.getOrderNumber())) {
                 Order existingOrder = orderRepository.findByOrderNumber(resources.getOrderNumber());
@@ -238,7 +238,7 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
 
-            // 3. 打印更新前的值，用于调试
+            // 3. 打印更前的值，用于调试
             logger.info("更新前的订单信息 - 订单号: {}, 卖家名称: {}, 联系方式: {}, 昵称: {}", 
                 oldOrder.getOrderNumber(),
                 oldOrder.getOrderSellerName(), 
@@ -254,7 +254,7 @@ public class OrderServiceImpl implements OrderService {
             if (!Objects.equals(oldOrder.getOrderSellerName(), resources.getOrderSellerName()) 
                 || !Objects.equals(oldOrder.getOrderContactInfo(), resources.getOrderContactInfo())) {
                 
-                String newNickname = generateSellerNickname(
+                String newNickname = NicknameUtil.generateNickname(
                     resources.getOrderSellerName(), 
                     resources.getOrderContactInfo()
                 );
@@ -408,6 +408,59 @@ public class OrderServiceImpl implements OrderService {
             list.add(map);
         }
         FileUtil.downloadExcel(list, response);
+    }
+
+    /**
+     * [修改] 计算抽成金额
+     */
+    private void calculatePercentageAmount(Order resources) {
+        // 直接使用小数作为抽成比例
+        BigDecimal percentage = resources.getOrderAmount();
+        
+        // 获取 App 信息
+        AppInfoDto appInfo = appInfoService.findById(resources.getOrderAppId());
+        if (appInfo == null) {
+            throw new RuntimeException("未找到关联的App信息");
+        }
+        
+        if (appInfo.getSaleFee() == null || appInfo.getSaleFee().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("App售出金额为空或无效，无法计算抽成金额");
+        }
+        
+        // 计算订单总支出
+        BigDecimal totalExpenses = BigDecimal.ZERO;
+        if (resources.getOrderCommission() != null) {
+            totalExpenses = totalExpenses.add(resources.getOrderCommission());
+        }
+        if (resources.getOrderReferralFee() != null) {
+            totalExpenses = totalExpenses.add(resources.getOrderReferralFee());
+        }
+        
+        // 计算净收入和实际金额
+        BigDecimal netIncome = appInfo.getSaleFee().subtract(totalExpenses);
+        BigDecimal actualAmount = netIncome.multiply(percentage)
+            .setScale(2, RoundingMode.HALF_UP);
+        
+        // 更新订单金额
+        resources.setOrderAmount(actualAmount);
+        
+        StringBuilder remark = new StringBuilder(100)  // 预分配合适的容量
+            .append("抽成计算详情: ")
+            .append("售出金额$").append(appInfo.getSaleFee())
+            .append(" - 总支出$").append(totalExpenses)
+            .append(" = 净收入$").append(netIncome)
+            .append(" × ").append(percentage.multiply(HUNDRED)).append("%")
+            .append(" = $").append(actualAmount);
+        
+        resources.setOrderRemark(remark.toString());
+        
+        logger.info("抽成金额计算详情 - 订单号: {}, 售出金额: {}, 总支出: {}, 净收入: {}, 抽成比例: {}%, 计算后金额: {}", 
+            resources.getOrderNumber(), 
+            appInfo.getSaleFee(),
+            totalExpenses,
+            netIncome,
+            percentage.multiply(new BigDecimal("100")),
+            actualAmount);
     }
 
 }

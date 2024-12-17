@@ -34,6 +34,10 @@ public class FinanceRecordsQueryCriteria{
     @Query
     private Long accountId;
 
+    /** 精确查询账号ID */
+    @Query
+    private String orderNumber;
+
     /** 精确查询账号类型 */
     @Query
     private String accountType;
